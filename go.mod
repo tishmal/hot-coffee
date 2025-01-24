@@ -1,3 +1,3 @@
-module hot-cofee
+module hot-coffee
 
-go 1.22
+go 1.22.6
