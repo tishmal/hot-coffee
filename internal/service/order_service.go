@@ -17,3 +17,12 @@ func CreateOrder(order models.Order) error {
 }
 
 // Дополнительные функции для обработки заказов (например, обновление статуса)
+
+func GetAllOrders() ([]models.Order, error) {
+	orders, err := dal.LoadOrders()
+	if err != nil {
+		log.Printf("Order created:")
+		return nil, nil
+	}
+	return orders, nil
+}

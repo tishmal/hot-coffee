@@ -26,3 +26,13 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 // Дополнительные обработчики для получения, обновления и удаления заказов
+
+func GetAllOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := service.GetAllOrders()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(orders)
+}

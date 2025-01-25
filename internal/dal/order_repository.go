@@ -11,7 +11,7 @@ const ordersFile = "data/orders.json"
 
 // Сохранение заказа в JSON файл
 func SaveOrder(order models.Order) error {
-	orders, err := loadOrders()
+	orders, err := LoadOrders()
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func SaveOrder(order models.Order) error {
 }
 
 // Загрузка всех заказов из файла
-func loadOrders() ([]models.Order, error) {
+func LoadOrders() ([]models.Order, error) {
 	file, err := os.Open(ordersFile)
 	if err != nil {
 		return nil, err
