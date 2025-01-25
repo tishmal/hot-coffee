@@ -7,8 +7,21 @@ import (
 	"net/http"
 )
 
+type OrderHandlerInterface interface {
+	HandleCreateOrder(w http.ResponseWriter, r *http.Request)
+	HandleGetAllOrders(w http.ResponseWriter, r *http.Request)
+}
+
+type OrderHandler struct {
+	orderService service.OrderService
+}
+
+func NewOrderHandler(orderService service.OrderService) *OrderHandler {
+	return &OrderHandler{orderService: orderService}
+}
+
 // Обработчик для создания нового заказа
-func CreateOrder(w http.ResponseWriter, r *http.Request) {
+func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	var newOrder models.Order
 	if err := json.NewDecoder(r.Body).Decode(&newOrder); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -16,7 +29,7 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Вызываем сервис для создания заказа
-	if err := service.CreateOrder(newOrder); err != nil {
+	if err := h.orderService.CreateOrder(newOrder); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -27,8 +40,8 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 
 // Дополнительные обработчики для получения, обновления и удаления заказов
 
-func GetAllOrders(w http.ResponseWriter, r *http.Request) {
-	orders, err := service.GetAllOrders()
+func (h *OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := h.orderService.GetAllOrders()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}

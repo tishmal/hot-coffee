@@ -7,11 +7,24 @@ import (
 	"os"
 )
 
+type OrderRepositoryInterface interface {
+	CreateOrder(order models.Order) error
+	LoadOrders() ([]models.Order, error)
+}
+
+type OrderRepositoryJSON struct {
+	filePath string
+}
+
+func NewOrderRepositoryJSON(filePath string) *OrderRepositoryJSON {
+	return &OrderRepositoryJSON{filePath: filePath}
+}
+
 const ordersFile = "data/orders.json"
 
 // Сохранение заказа в JSON файл
-func SaveOrder(order models.Order) error {
-	orders, err := LoadOrders()
+func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
+	orders, err := r.LoadOrders()
 	if err != nil {
 		return err
 	}
@@ -19,22 +32,6 @@ func SaveOrder(order models.Order) error {
 	orders = append(orders, order)
 
 	return saveOrders(orders)
-}
-
-// Загрузка всех заказов из файла
-func LoadOrders() ([]models.Order, error) {
-	file, err := os.Open(ordersFile)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var orders []models.Order
-	if err := json.NewDecoder(file).Decode(&orders); err != nil {
-		return nil, err
-	}
-
-	return orders, nil
 }
 
 // Запись заказов в файл
@@ -52,4 +49,20 @@ func saveOrders(orders []models.Order) error {
 	}
 
 	return nil
+}
+
+// Загрузка всех заказов из файла
+func (r *OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
+	file, err := os.Open(ordersFile)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var orders []models.Order
+	if err := json.NewDecoder(file).Decode(&orders); err != nil {
+		return nil, err
+	}
+
+	return orders, nil
 }
