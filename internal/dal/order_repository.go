@@ -13,6 +13,7 @@ type OrderRepositoryInterface interface {
 	CreateOrder(order models.Order) error
 	LoadOrders() ([]models.Order, error)
 	GetOrderByID(id string) (*models.Order, error)
+	DeleteOrder(id string) (*models.Order, error)
 }
 
 type OrderRepositoryJSON struct {
@@ -92,6 +93,48 @@ func (r *OrderRepositoryJSON) GetOrderByID(id string) (*models.Order, error) {
 			if orders[i].ID == id {
 				return &orders[i], nil
 			}
+		}
+	}
+	return nil, fmt.Errorf("Order with ID %s not found", id)
+}
+
+func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
+	// Открываем файл с данными
+	data, err := ioutil.ReadFile("data/orders.json")
+	if err != nil {
+		return nil, fmt.Errorf("Error reading file: %v", err)
+	}
+
+	// Слайс для хранения всех заказов
+	var orders []models.Order
+
+	// Парсим JSON из файла в структуру
+	err = json.Unmarshal(data, &orders)
+	if err != nil {
+		log.Fatalf("Error unmarshaling JSON: %v", err)
+	}
+
+	// Проверяем, что заказы есть в данных
+	for i := 0; i < len(orders); i++ {
+		if orders[i].ID == id {
+			deletedOrder := orders[i]
+
+			// Удаляем заказ из слайса
+			orders = append(orders[:i], orders[i+1:]...)
+
+			// Перезаписываем файл с обновленным списком заказов
+			updatedData, err := json.MarshalIndent(orders, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("Error marshaling updated orders: %v", err)
+			}
+
+			err = ioutil.WriteFile("data/orders.json", updatedData, os.ModePerm)
+			if err != nil {
+				return nil, fmt.Errorf("Error writing updated file: %v", err)
+			}
+
+			// Возвращаем удаленный заказ
+			return &deletedOrder, nil
 		}
 	}
 	return nil, fmt.Errorf("Order with ID %s not found", id)
