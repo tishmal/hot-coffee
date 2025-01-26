@@ -10,6 +10,7 @@ import (
 type OrderHandlerInterface interface {
 	HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 	HandleGetAllOrders(w http.ResponseWriter, r *http.Request)
+	HandleGetOrderById(w http.ResponseWriter, r *http.Request)
 }
 
 type OrderHandler struct {
@@ -48,4 +49,14 @@ func (h *OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(orders)
+}
+
+func (h *OrderHandler) HandleGetOrderById(w http.ResponseWriter, r *http.Request, orderID string) {
+	order, err := h.orderService.GetOrderByID(orderID)
+	if err != nil || &order == nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(order)
 }
