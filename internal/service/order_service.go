@@ -7,6 +7,7 @@ import (
 	"hot-coffee/models"
 	"log"
 	"strconv"
+	"time"
 )
 
 type OrderServiceInterface interface {
@@ -36,6 +37,9 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	}
 
 	order.ID = strconv.Itoa(int(newID))
+
+	order.CreatedAt = time.Now().UTC().Format(time.RFC3339)
+	order.Status = "open"
 
 	// Здесь можно добавить проверки и логику обработки заказа
 	if err := s.repository.CreateOrder(order); err != nil {

@@ -574,5 +574,37 @@
     ],
     "status": "",
     "created_at": ""
+  },
+  {
+    "order_id": "9",
+    "customer_name": "Torin 5",
+    "items": [
+      {
+        "product_id": "espresso",
+        "quantity": 2
+      },
+      {
+        "product_id": "croissant",
+        "quantity": 1
+      }
+    ],
+    "status": "",
+    "created_at": "2025-01-27T20:06:40Z"
+  },
+  {
+    "order_id": "10",
+    "customer_name": "Torin 6",
+    "items": [
+      {
+        "product_id": "espresso",
+        "quantity": 2
+      },
+      {
+        "product_id": "croissant",
+        "quantity": 1
+      }
+    ],
+    "status": "open",
+    "created_at": "2025-01-27T20:07:50Z"
   }
 ]
