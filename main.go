@@ -7,23 +7,13 @@ import (
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
 	"hot-coffee/internal/service"
-	. "hot-coffee/models"
 	"log"
 	"net/http"
 	"strings"
 )
 
-var (
-	orders         = make(map[string]Order)
-	menuItems      = make(map[string]MenuItem)
-	inventoryItems = make(map[string]InventoryItem)
-)
-
-var orderHandler *handler.OrderHandler
-
 func main() {
 	port := flag.Int("port", 8080, "Port number to listen on")
-	dir := flag.String("dir", "data", "Base directory for storage")
 	help := flag.Bool("help", false, "Show help")
 	flag.Parse()
 
@@ -32,16 +22,22 @@ func main() {
 		return
 	}
 
-	orderRepo := dal.NewOrderRepositoryJSON(*dir)
-	orderService := service.NewOrderService(orderRepo)
-	orderHandler = handler.NewOrderHandler(*orderService)
+	// orderRepo := dal.NewOrderRepositoryJSON("")
+	// orderService := service.NewOrderService(orderRepo)
 
-	http.HandleFunc("/orders", handleOrders(orderHandler))
-	http.HandleFunc("/orders/", handleOrders(orderHandler))
-	// http.HandleFunc("/orders", orderHandler.HandleGetAllOrders)
+	// orderHandler := handler.NewOrderHandler(*orderService)
+
+	menuRepo := dal.NewMenuRepositoryJSON("")
+	menuService := service.NewMenuService(menuRepo)
+
+	menuHandler := handler.NewMenuHandler(menuService)
+
+	// http.HandleFunc("/orders", handleOrders(orderHandler))
+	// http.HandleFunc("/orders/", handleOrders(orderHandler))
+
 	// http.HandleFunc("/orders/", orderHandler)
-	// http.HandleFunc("/menu", menuHandler)
-	// http.HandleFunc("/menu/", menuHandler)
+	http.HandleFunc("/menu", handleOrders(menuHandler))
+
 	// http.HandleFunc("/inventory", inventoryHandler)
 	// http.HandleFunc("/inventory/", inventoryHandler)
 
@@ -57,98 +53,65 @@ func main() {
 	}
 }
 
-func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		orderID := strings.TrimPrefix(r.URL.Path, "/orders/")
+// func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		path := strings.Trim(r.URL.Path, "/")
+// 		parts := strings.SplitN(path, "/", 2)
 
-		switch {
-		case orderID == "" && r.Method == http.MethodGet:
-			// Handle Get All Orders
-			orderHandler.HandleGetAllOrders(w, r)
-		case orderID == "" && r.Method == http.MethodPost:
-			// Handle Create New Order
-			orderHandler.HandleCreateOrder(w, r)
-		case orderID != "" && r.Method == http.MethodGet:
-			// Handle Get Order By ID
-			orderHandler.HandleGetOrdersByID(w, r, orderID)
-		case orderID != "" && r.Method == http.MethodPut:
-			// Handle Update Order By ID
-			orderHandler.HandleUpdateOrder(w, r, orderID)
-		case orderID != "" && r.Method == http.MethodDelete:
-			// Handle Delete Order By ID
-			orderHandler.HandleDeleteOrder(w, r, orderID)
-		case orderID != "" && r.Method == http.MethodPost:
-			// Handle Close Order By ID
-			orderHandler.HandleCloseOrder(w, r, orderID)
+// 		switch r.Method {
+// 		case http.MethodGet:
+// 			if len(parts) == 1 {
+// 				orderHandler.HandleGetAllOrders(w, r)
+// 			} else if len(parts) == 2 {
+// 				orderHandler.HandleGetOrderById(w, r, parts[1])
+// 			} else {
+// 				http.Error(w, "Not Found", http.StatusNotFound)
+// 			}
+// 		case http.MethodPost:
+// 			if len(parts) == 1 {
+// 				orderHandler.HandleCreateOrder(w, r)
+// 			}
+// 		// case http.MethodPut:
+// 		// 	if len(parts) == 1 {
+// 		// 		s.CreateBucket(w, r, parts[0])
+// 		// 	} else if len(parts) == 2 {
+// 		// 		s.PutObject(w, r, parts[0], parts[1])
+// 		// 	} else {
+// 		// 		utils.WriteErrorXML(w, "Bad Request", http.StatusBadRequest)
+// 		// 	}
+// 		case http.MethodDelete:
+// 			if len(parts) == 2 {
+// 				orderHandler.HandleDeleteOrder(w, r, parts[1])
+// 			} else {
+// 				http.Error(w, "Not Found", http.StatusNotFound)
+// 			}
+// 		default:
+// 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+// 		}
+// 	}
+// }
+
+func handleOrders(menuHandler *handler.MenuHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := strings.Trim(r.URL.Path, "/")
+		parts := strings.SplitN(path, "/", 2)
+
+		switch r.Method {
+		case http.MethodPost:
+			if len(parts) == 1 {
+				menuHandler.HandleAddMenuItem(w, r)
+			}
+		// case http.MethodPut:
+		// 	if len(parts) == 1 {
+		// 		s.CreateBucket(w, r, parts[0])
+		// 	} else if len(parts) == 2 {
+		// 		s.PutObject(w, r, parts[0], parts[1])
+		// 	} else {
+		// 		utils.WriteErrorXML(w, "Bad Request", http.StatusBadRequest)
+		// 	}
+
 		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
 	}
 }
-
-// func menuHandler(w http.ResponseWriter, r *http.Request) {
-// 	menuID := strings.TrimPrefix(r.URL.Path, "/menu/")
-
-// 	switch r.Method {
-// 	case http.MethodPut:
-// 		updateMenuItem(w, r, menuID)
-// 	case http.MethodGet:
-// 		if menuID == "" {
-// 			getAllmenuItems(w)
-// 		} else {
-// 			getMenuItemByID(w, r, menuID)
-// 		}
-// 	case http.MethodDelete:
-// 		deleteMenuItem(w, menuID)
-// 	case http.MethodPost:
-// 		addMenuItem(w, r)
-// 	default:
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 	}
-// }
-
-// func inventoryHandler(w http.ResponseWriter, r *http.Request) {
-// 	inventoryID := strings.TrimPrefix(r.URL.Path, "/inventory/")
-
-// 	switch r.Method {
-// 	case http.MethodPut:
-// 		updateInventoryItem(w, r, inventoryID)
-// 	case http.MethodGet:
-// 		if menuID == "" {
-// 			getAllInventoryItems(w)
-// 		} else {
-// 			getInventoryItemByID(w, r, inventoryID)
-// 		}
-// 	case http.MethodDelete:
-// 		deleteInventoryItem(w, inventoryID)
-// 	case http.MethodPost:
-// 		addInventoryItem(w, r)
-// 	default:
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 	}
-// }
-
-// // Обработчик запросов
-// func handleRequests(w http.ResponseWriter, r *http.Request) {
-// 	// Устанавливаем заголовки для правильного отображения HTML
-// 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-// 	// Чтение HTML файла
-// 	html, err := ioutil.ReadFile("index.html")
-// 	if err != nil {
-// 		http.Error(w, "Failed to load HTML file", http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	// Вставляем путь из URL в HTML-страницу
-// 	username := r.URL.Path[1:]
-// 	if username == "" {
-// 		username = "Guest"
-// 	}
-
-// 	// Заменяем метку <username> на значение из URL
-// 	htmlStr := strings.Replace(string(html), "<username>", username, 1)
-
-// 	// Отправляем страницу клиенту
-// 	fmt.Fprint(w, htmlStr)
-// }

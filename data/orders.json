@@ -1,66 +1,66 @@
 [
   {
-    "order_id": "order123",
-    "customer_name": "Alice Smith",
-    "items": [
+    "product_id": "latte",
+    "name": "Caffe Latte",
+    "description": "Espresso with steamed milk",
+    "price": 3.5,
+    "ingredients": [
       {
-        "product_id": "latte",
-        "quantity": 2
+        "ingredient_id": "espresso_shot",
+        "quantity": 1
       },
       {
-        "product_id": "muffin",
-        "quantity": 1
+        "ingredient_id": "milk",
+        "quantity": 200
       }
-    ],
-    "status": "open",
-    "created_at": "2023-10-01T09:00:00Z"
+    ]
   },
   {
-    "order_id": "",
-    "customer_name": "Tim Shmal",
-    "items": [
+    "product_id": "muffin",
+    "name": "Blueberry Muffin",
+    "description": "Freshly baked muffin with blueberries",
+    "price": 2,
+    "ingredients": [
       {
-        "product_id": "espresso",
-        "quantity": 2
+        "ingredient_id": "flour",
+        "quantity": 100
       },
       {
-        "product_id": "croissant",
-        "quantity": 1
+        "ingredient_id": "blueberries",
+        "quantity": 20
+      },
+      {
+        "ingredient_id": "sugar",
+        "quantity": 30
       }
-    ],
-    "status": "",
-    "created_at": ""
+    ]
   },
   {
-    "order_id": "order125",
-    "customer_name": "Charlie Brown",
-    "items": [
+    "product_id": "espresso",
+    "name": "Espresso",
+    "description": "Strong and bold coffee",
+    "price": 2.5,
+    "ingredients": [
       {
-        "product_id": "cappuccino",
-        "quantity": 2
-      },
-      {
-        "product_id": "croissant",
+        "ingredient_id": "espresso_shot",
         "quantity": 1
       }
-    ],
-    "status": "open",
-    "created_at": "2025-01-25T10:00:00Z"
+    ]
   },
   {
-    "order_id": "order125",
-    "customer_name": "Charlie Brown",
-    "items": [
+    "product_id": "latte",
+    "name": "Caffe Latte",
+    "description": "Espresso with steamed milk",
+    "price": 3.5,
+    "ingredients": [
       {
-        "product_id": "cappuccino",
-        "quantity": 2
+        "ingredient_id": "espresso_shot",
+        "quantity": 1
       },
       {
-        "product_id": "croissant",
-        "quantity": 1
+        "ingredient_id": "milk",
+        "quantity": 200
       }
-    ],
-    "status": "open",
-    "created_at": "2025-01-25T10:00:00Z"
+    ]
   }
 ]
