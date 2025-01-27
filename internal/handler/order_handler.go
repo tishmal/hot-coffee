@@ -5,7 +5,6 @@ import (
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
 	"net/http"
-	"time"
 )
 
 type OrderHandlerInterface interface {
@@ -31,17 +30,12 @@ func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if newOrder.CreatedAt == "" {
-		newOrder.CreatedAt = time.Now().Format(time.RFC3339)
-	}
-
 	// Вызываем сервис для создания заказа
 	if err := h.orderService.CreateOrder(newOrder); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(newOrder)
 }

@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"hot-coffee/models"
+	"io/ioutil"
 	"os"
 )
 
 type MenuRepositoryInterface interface {
 	AddMenuItem(menuItem models.MenuItem) error
 	LoadMenuItems() ([]models.MenuItem, error)
+	SaveMenuItems(menuItems []models.MenuItem) error
 }
 
 type MenuRepositoryJSON struct {
@@ -63,4 +65,20 @@ func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
 	}
 
 	return menuItems, nil
+}
+
+func (r *MenuRepositoryJSON) SaveMenuItems(menuItems []models.MenuItem) error {
+	// Запись обновленных данных в файл
+	updatedData, err := json.MarshalIndent(menuItems, "", "  ")
+	if err != nil {
+		return fmt.Errorf("error marshaling menu items: %v", err)
+	}
+
+	// Сохранение в файл
+	err = ioutil.WriteFile("data/menu_items.json", updatedData, os.ModePerm)
+	if err != nil {
+		return fmt.Errorf("error writing to menu items file: %v", err)
+	}
+
+	return nil
 }

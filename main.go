@@ -22,21 +22,19 @@ func main() {
 		return
 	}
 
-	// orderRepo := dal.NewOrderRepositoryJSON("")
-	// orderService := service.NewOrderService(orderRepo)
+	orderRepo := dal.NewOrderRepositoryJSON("")
+	orderService := service.NewOrderService(orderRepo)
+	orderHandler := handler.NewOrderHandler(*orderService)
 
-	// orderHandler := handler.NewOrderHandler(*orderService)
+	http.HandleFunc("/orders", handleOrders(orderHandler))
+	http.HandleFunc("/orders/", handleOrders(orderHandler))
 
 	menuRepo := dal.NewMenuRepositoryJSON("")
 	menuService := service.NewMenuService(menuRepo)
-
 	menuHandler := handler.NewMenuHandler(menuService)
 
-	// http.HandleFunc("/orders", handleOrders(orderHandler))
-	// http.HandleFunc("/orders/", handleOrders(orderHandler))
-
-	// http.HandleFunc("/orders/", orderHandler)
-	http.HandleFunc("/menu", handleOrders(menuHandler))
+	http.HandleFunc("/menu", handleMenu(menuHandler))
+	http.HandleFunc("/menu/", handleMenu(menuHandler))
 
 	// http.HandleFunc("/inventory", inventoryHandler)
 	// http.HandleFunc("/inventory/", inventoryHandler)
@@ -53,53 +51,23 @@ func main() {
 	}
 }
 
-// func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		path := strings.Trim(r.URL.Path, "/")
-// 		parts := strings.SplitN(path, "/", 2)
-
-// 		switch r.Method {
-// 		case http.MethodGet:
-// 			if len(parts) == 1 {
-// 				orderHandler.HandleGetAllOrders(w, r)
-// 			} else if len(parts) == 2 {
-// 				orderHandler.HandleGetOrderById(w, r, parts[1])
-// 			} else {
-// 				http.Error(w, "Not Found", http.StatusNotFound)
-// 			}
-// 		case http.MethodPost:
-// 			if len(parts) == 1 {
-// 				orderHandler.HandleCreateOrder(w, r)
-// 			}
-// 		// case http.MethodPut:
-// 		// 	if len(parts) == 1 {
-// 		// 		s.CreateBucket(w, r, parts[0])
-// 		// 	} else if len(parts) == 2 {
-// 		// 		s.PutObject(w, r, parts[0], parts[1])
-// 		// 	} else {
-// 		// 		utils.WriteErrorXML(w, "Bad Request", http.StatusBadRequest)
-// 		// 	}
-// 		case http.MethodDelete:
-// 			if len(parts) == 2 {
-// 				orderHandler.HandleDeleteOrder(w, r, parts[1])
-// 			} else {
-// 				http.Error(w, "Not Found", http.StatusNotFound)
-// 			}
-// 		default:
-// 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-// 		}
-// 	}
-// }
-
-func handleOrders(menuHandler *handler.MenuHandler) http.HandlerFunc {
+func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := strings.Trim(r.URL.Path, "/")
 		parts := strings.SplitN(path, "/", 2)
 
 		switch r.Method {
+		case http.MethodGet:
+			if len(parts) == 1 {
+				orderHandler.HandleGetAllOrders(w, r)
+			} else if len(parts) == 2 {
+				orderHandler.HandleGetOrderById(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
 		case http.MethodPost:
 			if len(parts) == 1 {
-				menuHandler.HandleAddMenuItem(w, r)
+				orderHandler.HandleCreateOrder(w, r)
 			}
 		// case http.MethodPut:
 		// 	if len(parts) == 1 {
@@ -109,6 +77,44 @@ func handleOrders(menuHandler *handler.MenuHandler) http.HandlerFunc {
 		// 	} else {
 		// 		utils.WriteErrorXML(w, "Bad Request", http.StatusBadRequest)
 		// 	}
+		case http.MethodDelete:
+			if len(parts) == 2 {
+				orderHandler.HandleDeleteOrder(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	}
+}
+
+func handleMenu(menuHandler *handler.MenuHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := strings.Trim(r.URL.Path, "/")
+		parts := strings.SplitN(path, "/", 2)
+
+		switch r.Method {
+		case http.MethodPost:
+			if len(parts) == 1 {
+				menuHandler.HandleAddMenuItem(w, r)
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		case http.MethodGet:
+			if len(parts) == 1 {
+				menuHandler.HandleGetAllMenuItems(w, r)
+			} else if len(parts) == 2 {
+				menuHandler.HandleGetMenuItemById(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		case http.MethodDelete:
+			if len(parts) == 2 {
+				menuHandler.HandleDeleteMenuItemById(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
 
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)

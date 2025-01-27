@@ -9,6 +9,9 @@ import (
 
 type MenuHandlerInterface interface {
 	HandleAddMenuItem(w http.ResponseWriter, r *http.Request)
+	HandleGetAllMenuItems(w http.ResponseWriter, r *http.Request)
+	HandleGetMenuItemById(w http.ResponseWriter, r *http.Request, orderID string)
+	HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Request, orderID string)
 }
 
 type MenuHandler struct {
@@ -42,4 +45,37 @@ func (m *MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(NewMenuItem)
+}
+
+func (m *MenuHandler) HandleGetAllMenuItems(w http.ResponseWriter, r *http.Request) {
+	items, err := m.menuService.GetAllMenuItems()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(items)
+}
+
+func (m *MenuHandler) HandleGetMenuItemById(w http.ResponseWriter, r *http.Request, orderID string) {
+	item, err := m.menuService.GetMenuItemByID(orderID)
+	if err != nil || &item == nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(item)
+}
+
+func (m *MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Request, orderID string) {
+	err := m.menuService.DeleteMenuItemByID(orderID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNotFound)
 }

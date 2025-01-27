@@ -40,7 +40,7 @@ func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 
 // Запись заказов в файл
 func saveOrders(orders []models.Order) error {
-	file, err := os.OpenFile("data/orders.json", os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.Create("data/orders.json")
 	if err != nil {
 		return fmt.Errorf("could not create orders file: %v", err)
 	}
@@ -59,16 +59,13 @@ func saveOrders(orders []models.Order) error {
 func (r *OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
 	file, err := os.Open(ordersFile)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return []models.Order{}, nil
-		}
-		return nil, fmt.Errorf("could not open orders file: %v", err)
+		return nil, err
 	}
 	defer file.Close()
 
 	var orders []models.Order
 	if err := json.NewDecoder(file).Decode(&orders); err != nil {
-		return nil, fmt.Errorf("could not decode orders: %v", err)
+		return nil, err
 	}
 
 	return orders, nil
