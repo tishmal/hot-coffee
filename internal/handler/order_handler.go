@@ -31,13 +31,13 @@ func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Вызываем сервис для создания заказа
-	if err := h.orderService.CreateOrder(newOrder); err != nil {
+	if order, err := h.orderService.CreateOrder(newOrder); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	} else {
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(order)
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(newOrder)
 }
 
 // Дополнительные обработчики для получения, обновления и удаления заказов

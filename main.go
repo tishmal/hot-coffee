@@ -74,14 +74,12 @@ func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 		// 	} else {
 		// 		utils.WriteErrorXML(w, "Bad Request", http.StatusBadRequest)
 		// 	}
-		// case http.MethodDelete:
-		// 	if len(parts) == 1 {
-		// 		s.DeleteBucket(w, r, parts[0])
-		// 	} else if len(parts) == 2 {
-		// 		s.DeleteObject(w, r, parts[0], parts[1])
-		// 	} else {
-		// 		utils.WriteErrorXML(w, "Not Found", http.StatusNotFound)
-		// 	}
+		case http.MethodDelete:
+			if len(parts) == 2 {
+				orderHandler.HandleDeleteOrder(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}

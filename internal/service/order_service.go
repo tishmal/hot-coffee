@@ -2,13 +2,15 @@ package service
 
 import (
 	"fmt"
+	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
 	"log"
+	"strconv"
 )
 
 type OrderServiceInterface interface {
-	CreateOrder(order models.Order) error
+	CreateOrder(order models.Order) (models.Order, error)
 	GetAllOrders() ([]models.Order, error)
 	GetOrderByID(id string) (*models.Order, error)
 	DeleteOrder(id string) (*models.Order, error)
@@ -23,13 +25,24 @@ func NewOrderService(repository dal.OrderRepositoryInterface) *OrderService {
 }
 
 // Создание нового заказа
-func (s *OrderService) CreateOrder(order models.Order) error {
+func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
+	newID := helper.GenerateID()
+
+	for {
+		if result, err := s.repository.GetOrderByID(strconv.Itoa(int(newID))); result == nil && err != nil {
+			break
+		}
+		newID = helper.GenerateID()
+	}
+
+	order.ID = strconv.Itoa(int(newID))
+
 	// Здесь можно добавить проверки и логику обработки заказа
 	if err := s.repository.CreateOrder(order); err != nil {
-		return err
+		return order, err
 	}
 	log.Printf("Order created: %s", order.ID)
-	return nil
+	return order, nil
 }
 
 // Дополнительные функции для обработки заказов (например, обновление статуса)
