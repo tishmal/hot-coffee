@@ -593,7 +593,7 @@
   },
   {
     "order_id": "10",
-    "customer_name": "Torin 6",
+    "customer_name": "Train 6",
     "items": [
       {
         "product_id": "espresso",
@@ -604,7 +604,7 @@
         "quantity": 1
       }
     ],
-    "status": "open",
+    "status": "",
     "created_at": "2025-01-27T20:07:50Z"
   }
 ]

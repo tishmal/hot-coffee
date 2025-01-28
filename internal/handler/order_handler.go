@@ -10,8 +10,9 @@ import (
 type OrderHandlerInterface interface {
 	HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 	HandleGetAllOrders(w http.ResponseWriter, r *http.Request)
-	HandleGetOrderById(w http.ResponseWriter, r *http.Request)
-	HandleDeleteOrder(w http.ResponseWriter, r *http.Request)
+	HandleGetOrderById(w http.ResponseWriter, r *http.Request, orderID string)
+	HandleDeleteOrder(w http.ResponseWriter, r *http.Request, orderID string)
+	HandleUpdateOrder(w http.ResponseWriter, r *http.Request, orderID string)
 }
 
 type OrderHandler struct {
@@ -70,4 +71,20 @@ func (h *OrderHandler) HandleDeleteOrder(w http.ResponseWriter, r *http.Request,
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(order)
+}
+
+func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request, orderID string) {
+	var changeOrder models.Order
+	if err := json.NewDecoder(r.Body).Decode(&changeOrder); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if order, err := h.orderService.UpdateOrder(orderID, changeOrder); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	} else {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(order)
+	}
 }

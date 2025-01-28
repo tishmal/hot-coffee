@@ -15,6 +15,7 @@ type OrderServiceInterface interface {
 	GetAllOrders() ([]models.Order, error)
 	GetOrderByID(id string) (*models.Order, error)
 	DeleteOrder(id string) (*models.Order, error)
+	UpdateOrder(id string) (models.Order, error)
 }
 
 type OrderService struct {
@@ -54,8 +55,8 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 func (s *OrderService) GetAllOrders() ([]models.Order, error) {
 	orders, err := s.repository.LoadOrders()
 	if err != nil {
-		log.Printf("Order created:")
-		return nil, nil
+		log.Printf("error get all orders!")
+		return nil, err
 	}
 	return orders, nil
 }
@@ -74,4 +75,12 @@ func (s *OrderService) DeleteOrder(id string) (*models.Order, error) {
 		return nil, fmt.Errorf("failed to delete order with ID %s: %v", id, err)
 	}
 	return order, nil
+}
+
+func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
+	changedOrder, err := s.repository.UpdateOrder(id, changeOrder)
+	if err != nil {
+		return changeOrder, fmt.Errorf("failed to delete order with ID %s: %v", id, err)
+	}
+	return changedOrder, nil
 }

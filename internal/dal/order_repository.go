@@ -14,6 +14,7 @@ type OrderRepositoryInterface interface {
 	LoadOrders() ([]models.Order, error)
 	GetOrderByID(id string) (*models.Order, error)
 	DeleteOrder(id string) (*models.Order, error)
+	UpdateOrder(id string, changeOrder models.Order) (models.Order, error)
 }
 
 type OrderRepositoryJSON struct {
@@ -138,4 +139,21 @@ func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
 		}
 	}
 	return nil, fmt.Errorf("Order with ID %s not found", id)
+}
+
+func (r *OrderRepositoryJSON) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
+	orders, err := r.LoadOrders()
+	if err != nil {
+		return changeOrder, err
+	}
+	for i := 0; i < len(orders); i++ {
+		if orders[i].ID == id {
+			orders[i].CustomerName = changeOrder.CustomerName
+			orders[i].Status = changeOrder.Status
+			saveOrders(orders)
+			return orders[i], nil
+		}
+	}
+
+	return changeOrder, nil
 }

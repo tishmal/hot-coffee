@@ -66,14 +66,12 @@ func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 			if len(parts) == 1 {
 				orderHandler.HandleCreateOrder(w, r)
 			}
-		// case http.MethodPut:
-		// 	if len(parts) == 1 {
-		// 		s.CreateBucket(w, r, parts[0])
-		// 	} else if len(parts) == 2 {
-		// 		s.PutObject(w, r, parts[0], parts[1])
-		// 	} else {
-		// 		utils.WriteErrorXML(w, "Bad Request", http.StatusBadRequest)
-		// 	}
+		case http.MethodPut:
+			if len(parts) == 2 {
+				orderHandler.HandleUpdateOrder(w, r, parts[1])
+			} else {
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+			}
 		case http.MethodDelete:
 			if len(parts) == 2 {
 				orderHandler.HandleDeleteOrder(w, r, parts[1])
