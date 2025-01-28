@@ -16,6 +16,7 @@ type OrderServiceInterface interface {
 	GetOrderByID(id string) (*models.Order, error)
 	DeleteOrder(id string) (*models.Order, error)
 	UpdateOrder(id string) (models.Order, error)
+	CloseOrder(orderID string) (models.Order, error)
 }
 
 type OrderService struct {
@@ -93,4 +94,20 @@ func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.
 		}
 	}
 	return changeOrder, fmt.Errorf("Order with ID %s not found", id)
+}
+
+func (s *OrderService) CloseOrder(id string) (models.Order, error) {
+	orders, err := s.repository.LoadOrders()
+	if err != nil {
+		return models.Order{}, fmt.Errorf("error reading all oreders %s: %v", id, err)
+	}
+
+	for i := 0; i < len(orders); i++ {
+		if orders[i].ID == id {
+			orders[i].Status = "closed"
+			s.repository.SaveOrders(orders)
+			return orders[i], nil
+		}
+	}
+	return models.Order{}, fmt.Errorf("Order with ID %s not found", id)
 }

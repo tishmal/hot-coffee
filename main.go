@@ -51,7 +51,7 @@ func main() {
 func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := strings.Trim(r.URL.Path, "/")
-		parts := strings.SplitN(path, "/", 2)
+		parts := strings.SplitN(path, "/", 3)
 
 		switch r.Method {
 		case http.MethodGet:
@@ -65,6 +65,10 @@ func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 		case http.MethodPost:
 			if len(parts) == 1 {
 				orderHandler.HandleCreateOrder(w, r)
+			} else if len(parts) == 3 && parts[2] == "close" {
+				orderHandler.HandleCloseOrder(w, r, parts[1])
+			} else {
+				http.Error(w, "Bad Request", http.StatusBadRequest)
 			}
 		case http.MethodPut:
 			if len(parts) == 2 {

@@ -13,6 +13,7 @@ type OrderHandlerInterface interface {
 	HandleGetOrderById(w http.ResponseWriter, r *http.Request, orderID string)
 	HandleDeleteOrder(w http.ResponseWriter, r *http.Request, orderID string)
 	HandleUpdateOrder(w http.ResponseWriter, r *http.Request, orderID string)
+	HandleCloseOrder(w http.Response, r *http.Request, orderID string)
 }
 
 type OrderHandler struct {
@@ -81,6 +82,17 @@ func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request,
 	}
 
 	if order, err := h.orderService.UpdateOrder(orderID, changeOrder); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	} else {
+		w.WriteHeader(http.StatusOK)
+
+		json.NewEncoder(w).Encode(order)
+	}
+}
+
+func (h *OrderHandler) HandleCloseOrder(w http.ResponseWriter, r *http.Request, orderID string) {
+	if order, err := h.orderService.CloseOrder(orderID); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	} else {
