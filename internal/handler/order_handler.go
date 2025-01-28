@@ -85,6 +85,7 @@ func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request,
 		return
 	} else {
 		w.WriteHeader(http.StatusOK)
+
 		json.NewEncoder(w).Encode(order)
 	}
 }

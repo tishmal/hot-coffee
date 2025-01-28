@@ -606,5 +606,21 @@
     ],
     "status": "",
     "created_at": "2025-01-27T20:07:50Z"
+  },
+  {
+    "order_id": "11",
+    "customer_name": "Train 21",
+    "items": [
+      {
+        "product_id": "espressoCH",
+        "quantity": 3
+      },
+      {
+        "product_id": "croissantCH2",
+        "quantity": 1
+      }
+    ],
+    "status": "open",
+    "created_at": "2025-01-28T09:31:15Z"
   }
 ]

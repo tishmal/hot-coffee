@@ -14,7 +14,8 @@ type OrderRepositoryInterface interface {
 	LoadOrders() ([]models.Order, error)
 	GetOrderByID(id string) (*models.Order, error)
 	DeleteOrder(id string) (*models.Order, error)
-	UpdateOrder(id string, changeOrder models.Order) (models.Order, error)
+	UpdateOrder(id string, changeOrder models.Order) ([]models.Order, error)
+	SaveOrders(orders []models.Order) error
 }
 
 type OrderRepositoryJSON struct {
@@ -36,11 +37,11 @@ func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 
 	orders = append(orders, order)
 
-	return saveOrders(orders)
+	return r.SaveOrders(orders)
 }
 
 // Запись заказов в файл
-func saveOrders(orders []models.Order) error {
+func (r *OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
 	file, err := os.Create("data/orders.json")
 	if err != nil {
 		return fmt.Errorf("could not create orders file: %v", err)
@@ -141,19 +142,10 @@ func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
 	return nil, fmt.Errorf("Order with ID %s not found", id)
 }
 
-func (r *OrderRepositoryJSON) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
+func (r *OrderRepositoryJSON) UpdateOrder(id string, changeOrder models.Order) ([]models.Order, error) {
 	orders, err := r.LoadOrders()
 	if err != nil {
-		return changeOrder, err
+		return orders, err
 	}
-	for i := 0; i < len(orders); i++ {
-		if orders[i].ID == id {
-			orders[i].CustomerName = changeOrder.CustomerName
-			orders[i].Status = changeOrder.Status
-			saveOrders(orders)
-			return orders[i], nil
-		}
-	}
-
-	return changeOrder, nil
+	return orders, nil
 }

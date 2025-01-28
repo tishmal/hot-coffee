@@ -78,9 +78,19 @@ func (s *OrderService) DeleteOrder(id string) (*models.Order, error) {
 }
 
 func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
-	changedOrder, err := s.repository.UpdateOrder(id, changeOrder)
+	orders, err := s.repository.UpdateOrder(id, changeOrder)
 	if err != nil {
-		return changeOrder, fmt.Errorf("failed to delete order with ID %s: %v", id, err)
+		return changeOrder, fmt.Errorf("error reading all oreders %s: %v", id, err)
 	}
-	return changedOrder, nil
+
+	for i := 0; i < len(orders); i++ {
+		if orders[i].ID == id {
+			orders[i].CustomerName = changeOrder.CustomerName
+			orders[i].CreatedAt = time.Now().UTC().Format(time.RFC3339)
+			orders[i].Items = changeOrder.Items
+			s.repository.SaveOrders(orders)
+			return orders[i], nil
+		}
+	}
+	return changeOrder, fmt.Errorf("Order with ID %s not found", id)
 }
