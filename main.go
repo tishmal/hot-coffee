@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"hot-coffee/add"
+	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
 	"hot-coffee/internal/service"
@@ -18,28 +18,29 @@ func main() {
 	flag.Parse()
 
 	if *help {
-		add.PrintUsage()
+		helper.PrintUsage()
 		return
 	}
-
+	// 1
 	orderRepo := dal.NewOrderRepositoryJSON("")
 	orderService := service.NewOrderService(orderRepo)
-
 	orderHandler := handler.NewOrderHandler(*orderService)
+	// 2
+	inventoryRepo := dal.NewInventoryRepositoryJSON("")
+	inventoryService := service.NewInventoryService(inventoryRepo)
+	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 
-	http.HandleFunc("/orders", handleOrders(orderHandler))
-	http.HandleFunc("/orders/", handleOrders(orderHandler))
-
-	// http.HandleFunc("/orders/", orderHandler)
+	http.HandleFunc("/orders", handleRequestsOrders(orderHandler))
+	http.HandleFunc("/orders/", handleRequestsOrders(orderHandler))
 	// http.HandleFunc("/menu", menuHandler)
 	// http.HandleFunc("/menu/", menuHandler)
-	// http.HandleFunc("/inventory", inventoryHandler)
-	// http.HandleFunc("/inventory/", inventoryHandler)
+	http.HandleFunc("/inventory", handleRequestsInventory(inventoryHandler))
+	http.HandleFunc("/inventory/", handleRequestsInventory(inventoryHandler))
 
 	addr := fmt.Sprintf(":%d", *port)
 
 	// Запуск браузера
-	go add.OpenBrowser(addr)
+	//go helper.OpenBrowser(addr)
 
 	// Запуск HTTP сервера
 	log.Printf("The server is running on the port %s...\n", addr)
@@ -48,7 +49,45 @@ func main() {
 	}
 }
 
-func handleOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
+func handleRequestsInventory(inventoryHandler handler.InventoryHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := strings.Trim(r.URL.Path, "/")
+		parts := strings.SplitN(path, "/", 3)
+
+		switch r.Method {
+		case http.MethodGet:
+			if len(parts) == 1 {
+				//orderHandler.HandleGetAllOrders(w, r)
+			} else if len(parts) == 2 {
+				//orderHandler.HandleGetOrderById(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		case http.MethodPost:
+			if len(parts) == 1 {
+				//orderHandler.HandleCreateOrder(w, r)
+			} else {
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+			}
+		case http.MethodPut:
+			if len(parts) == 2 {
+				//orderHandler.HandleUpdateOrder(w, r, parts[1])
+			} else {
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+			}
+		case http.MethodDelete:
+			if len(parts) == 2 {
+				//orderHandler.HandleDeleteOrder(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	}
+}
+
+func handleRequestsOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := strings.Trim(r.URL.Path, "/")
 		parts := strings.SplitN(path, "/", 3)
