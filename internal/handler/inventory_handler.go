@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
+	"hot-coffee/utils"
 	"net/http"
 )
 
@@ -29,7 +30,7 @@ func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.
 
 	// Вызываем сервис для создания заказа
 	if inventory, err := h.inventoryService.CreateInventory(newInventory); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	} else {
 		w.WriteHeader(http.StatusCreated)

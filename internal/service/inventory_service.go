@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
 	"log"
@@ -20,9 +21,14 @@ func NewInventoryService(_repository dal.InventoryRepositoryInterface) Inventory
 }
 
 func (s *InventoryService) CreateInventory(inventory models.InventoryItem) (models.InventoryItem, error) {
-	if err := s.repository.CreateInventory(inventory); err != nil {
-		return inventory, err
+	if inventory.IngredientID == "" || inventory.Name == "" || inventory.Quantity == 0 || inventory.Unit == "" {
+		return models.InventoryItem{}, errors.New("Invalid request body.")
 	}
+
+	if err := s.repository.CreateInventory(inventory); err != nil {
+		return models.InventoryItem{}, errors.New("Inventory exists")
+	}
+
 	log.Printf("Inventory created: %s", inventory.IngredientID)
 	return inventory, nil
 }
