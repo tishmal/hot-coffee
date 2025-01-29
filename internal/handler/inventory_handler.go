@@ -9,14 +9,15 @@ import (
 
 type InventoryHandlerInterface interface {
 	HandleCreateInventory(w http.ResponseWriter, r *http.Request)
+	HandleGetAllInventory(w http.ResponseWriter, r *http.Request)
 }
 
 type InventoryHandler struct {
-	_inventoryService service.InventoryService
+	inventoryService service.InventoryService
 }
 
-func NewInventoryHandler(inventoryService service.InventoryService) InventoryHandler {
-	return InventoryHandler{_inventoryService: inventoryService}
+func NewInventoryHandler(_inventoryService service.InventoryService) InventoryHandler {
+	return InventoryHandler{inventoryService: _inventoryService}
 }
 
 func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.Request) {
@@ -27,11 +28,21 @@ func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.
 	}
 
 	// Вызываем сервис для создания заказа
-	if inventory, err := h._inventoryService.CreateInventory(newInventory); err != nil {
+	if inventory, err := h.inventoryService.CreateInventory(newInventory); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else {
 		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(inventory)
 	}
+}
+
+func (h *InventoryHandler) HandleGetAllInventory(w http.ResponseWriter, r *http.Request) {
+	inventories, err := h.inventoryService.GetAllInventory()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(inventories)
 }

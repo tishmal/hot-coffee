@@ -40,5 +40,11 @@
     "name": "",
     "quantity": 0,
     "unit": ""
+  },
+  {
+    "ingredient_id": "",
+    "name": "",
+    "quantity": 0,
+    "unit": ""
   }
 ]

@@ -57,7 +57,7 @@ func handleRequestsInventory(inventoryHandler handler.InventoryHandler) http.Han
 		switch r.Method {
 		case http.MethodGet:
 			if len(parts) == 1 {
-				//orderHandler.HandleGetAllOrders(w, r)
+				inventoryHandler.HandleGetAllInventory(w, r)
 			} else if len(parts) == 2 {
 				//orderHandler.HandleGetOrderById(w, r, parts[1])
 			} else {
