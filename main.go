@@ -65,7 +65,7 @@ func handleRequestsInventory(inventoryHandler handler.InventoryHandler) http.Han
 			}
 		case http.MethodPost:
 			if len(parts) == 1 {
-				//orderHandler.HandleCreateOrder(w, r)
+				inventoryHandler.HandleCreateInventory(w, r)
 			} else {
 				http.Error(w, "Bad Request", http.StatusBadRequest)
 			}
