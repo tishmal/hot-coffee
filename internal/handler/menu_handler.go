@@ -6,6 +6,7 @@ import (
 
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
+	"hot-coffee/utils"
 )
 
 type MenuHandlerInterface interface {
@@ -27,7 +28,7 @@ func NewMenuHandler(menuService *service.MenuService) *MenuHandler {
 func (m *MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) {
 	var NewMenuItem models.MenuItem
 	if err := json.NewDecoder(r.Body).Decode(&NewMenuItem); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -40,42 +41,36 @@ func (m *MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := m.menuService.AddMenuItem(menuItem); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.ErrorInJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(NewMenuItem)
+	utils.ResponseInJSON(w, NewMenuItem)
 }
 
 func (m *MenuHandler) HandleGetAllMenuItems(w http.ResponseWriter, r *http.Request) {
 	items, err := m.menuService.GetAllMenuItems()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(items)
+	utils.ResponseInJSON(w, items)
 }
 
 func (m *MenuHandler) HandleGetMenuItemById(w http.ResponseWriter, r *http.Request, orderID string) {
 	item, err := m.menuService.GetMenuItemByID(orderID)
 	if err != nil || &item == nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	}
 
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(item)
+	utils.ResponseInJSON(w, item)
 }
 
 func (m *MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Request, orderID string) {
 	err := m.menuService.DeleteMenuItemByID(orderID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -85,16 +80,14 @@ func (m *MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Re
 func (m *MenuHandler) HandleUpdateMenu(w http.ResponseWriter, r *http.Request, menuID string) {
 	var changeMenu models.MenuItem
 	if err := json.NewDecoder(r.Body).Decode(&changeMenu); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	}
 
 	if menu, err := m.menuService.UpdateMenu(menuID, changeMenu); err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
-		w.WriteHeader(http.StatusOK)
-
-		json.NewEncoder(w).Encode(menu)
+		utils.ResponseInJSON(w, menu)
 	}
 }
