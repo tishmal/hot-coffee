@@ -40,7 +40,7 @@ func main() {
 	addr := fmt.Sprintf(":%d", *port)
 
 	// Запуск браузера
-	//go helper.OpenBrowser(addr)
+	// go helper.OpenBrowser(addr)
 
 	// Запуск HTTP сервера
 	log.Printf("The server is running on the port %s...\n", addr)
@@ -59,7 +59,7 @@ func handleRequestsInventory(inventoryHandler handler.InventoryHandler) http.Han
 			if len(parts) == 1 {
 				inventoryHandler.HandleGetAllInventory(w, r)
 			} else if len(parts) == 2 {
-				//orderHandler.HandleGetOrderById(w, r, parts[1])
+				// orderHandler.HandleGetOrderById(w, r, parts[1])
 			} else {
 				http.Error(w, "Not Found", http.StatusNotFound)
 			}
@@ -71,13 +71,13 @@ func handleRequestsInventory(inventoryHandler handler.InventoryHandler) http.Han
 			}
 		case http.MethodPut:
 			if len(parts) == 2 {
-				//orderHandler.HandleUpdateOrder(w, r, parts[1])
+				// orderHandler.HandleUpdateOrder(w, r, parts[1])
 			} else {
 				http.Error(w, "Bad Request", http.StatusBadRequest)
 			}
 		case http.MethodDelete:
 			if len(parts) == 2 {
-				//orderHandler.HandleDeleteOrder(w, r, parts[1])
+				// orderHandler.HandleDeleteOrder(w, r, parts[1])
 			} else {
 				http.Error(w, "Not Found", http.StatusNotFound)
 			}

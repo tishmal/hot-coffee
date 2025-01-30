@@ -24,7 +24,6 @@ func NewOrderHandler(orderService service.OrderService) *OrderHandler {
 	return &OrderHandler{orderService: orderService}
 }
 
-// Обработчик для создания нового заказа
 func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	var newOrder models.Order
 	if err := json.NewDecoder(r.Body).Decode(&newOrder); err != nil {
@@ -32,7 +31,6 @@ func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Вызываем сервис для создания заказа
 	if order, err := h.orderService.CreateOrder(newOrder); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -41,8 +39,6 @@ func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 		json.NewEncoder(w).Encode(order)
 	}
 }
-
-// Дополнительные обработчики для получения, обновления и удаления заказов
 
 func (h *OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request) {
 	orders, err := h.orderService.GetAllOrders()

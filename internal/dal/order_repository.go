@@ -116,15 +116,12 @@ func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
 		log.Fatalf("Error unmarshaling JSON: %v", err)
 	}
 
-	// Проверяем, что заказы есть в данных
 	for i := 0; i < len(orders); i++ {
 		if orders[i].ID == id {
 			deletedOrder := orders[i]
 
-			// Удаляем заказ из слайса
 			orders = append(orders[:i], orders[i+1:]...)
 
-			// Перезаписываем файл с обновленным списком заказов
 			updatedData, err := json.MarshalIndent(orders, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("Error marshaling updated orders: %v", err)
@@ -135,7 +132,6 @@ func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
 				return nil, fmt.Errorf("Error writing updated file: %v", err)
 			}
 
-			// Возвращаем удаленный заказ
 			return &deletedOrder, nil
 		}
 	}
