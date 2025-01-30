@@ -2,9 +2,10 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
-	"net/http"
 )
 
 type MenuHandlerInterface interface {
@@ -12,6 +13,7 @@ type MenuHandlerInterface interface {
 	HandleGetAllMenuItems(w http.ResponseWriter, r *http.Request)
 	HandleGetMenuItemById(w http.ResponseWriter, r *http.Request, orderID string)
 	HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Request, orderID string)
+	HandleUpdateMenu(w http.ResponseWriter, r *http.Request, menuID string)
 }
 
 type MenuHandler struct {
@@ -78,4 +80,21 @@ func (m *MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Re
 	}
 
 	w.WriteHeader(http.StatusNotFound)
+}
+
+func (m *MenuHandler) HandleUpdateMenu(w http.ResponseWriter, r *http.Request, menuID string) {
+	var changeMenu models.MenuItem
+	if err := json.NewDecoder(r.Body).Decode(&changeMenu); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if menu, err := m.menuService.UpdateMenu(menuID, changeMenu); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	} else {
+		w.WriteHeader(http.StatusOK)
+
+		json.NewEncoder(w).Encode(menu)
+	}
 }

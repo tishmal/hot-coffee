@@ -1,10 +1,12 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+	"log"
+
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
-	"log"
 )
 
 type MenuServiceInterface interface {
@@ -12,6 +14,7 @@ type MenuServiceInterface interface {
 	GetAllMenuItems() ([]models.MenuItem, error)
 	GetMenuItemByID(id string) (*models.MenuItem, error)
 	DeleteMenuItemByID(id string) error
+	UpdateMenu(id string, changeMenu models.MenuItem) (models.MenuItem, error)
 }
 
 type MenuService struct {
@@ -75,4 +78,21 @@ func (m *MenuService) DeleteMenuItemByID(id string) error {
 	menuItems = append(menuItems[:indexToDelete], menuItems[indexToDelete+1:]...)
 
 	return m.repository.SaveMenuItems(menuItems)
+}
+
+func (m *MenuService) UpdateMenu(id string, changeMenu models.MenuItem) (models.MenuItem, error) {
+	menu, err := m.repository.LoadMenuItems()
+	if err != nil {
+		return models.MenuItem{}, errors.New("invalid load menu items")
+	}
+
+	for i := 0; i < len(menu); i++ {
+		if menu[i].ID == id {
+			menu[i].Name = changeMenu.Name
+			menu[i].Ingredients = changeMenu.Ingredients
+			m.repository.SaveMenuItems(menu)
+			return menu[i], nil
+		}
+	}
+	return models.MenuItem{}, errors.New("invalid ID in menu items")
 }
