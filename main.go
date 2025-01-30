@@ -41,7 +41,7 @@ func main() {
 	addr := fmt.Sprintf(":%d", *port)
 
 	// Запуск браузера
-	go helper.OpenBrowser(addr)
+	// go helper.OpenBrowser(addr)
 
 	// Запуск HTTP сервера
 	log.Printf("The server is running on the port %s...\n", addr)

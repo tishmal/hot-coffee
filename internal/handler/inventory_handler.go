@@ -55,7 +55,6 @@ func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http
 		utils.ErrorInJSON(w, 404, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(inventory)
+
+	utils.ResponseInJSON(w, inventory)
 }
