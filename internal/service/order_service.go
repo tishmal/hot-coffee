@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -80,6 +81,10 @@ func (s *OrderService) DeleteOrder(id string) (*models.Order, error) {
 }
 
 func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
+	if changeOrder.CustomerName == "" || changeOrder.Items == nil || changeOrder.Status == "" {
+		return models.Order{}, errors.New("invalid request body")
+	}
+
 	orders, err := s.repository.UpdateOrder(id, changeOrder)
 	if err != nil {
 		return changeOrder, fmt.Errorf("error reading all oreders %s: %v", id, err)
@@ -91,7 +96,11 @@ func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.
 			orders[i].CreatedAt = time.Now().UTC().Format(time.RFC3339)
 			orders[i].Items = changeOrder.Items
 			s.repository.SaveOrders(orders)
-			return orders[i], nil
+			if changeOrder.ID != orders[i].ID {
+				return models.Order{}, errors.New("cannot change ID")
+			} else {
+				return orders[i], nil
+			}
 		}
 	}
 	return changeOrder, fmt.Errorf("Order with ID %s not found", id)
@@ -100,7 +109,7 @@ func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.
 func (s *OrderService) CloseOrder(id string) (models.Order, error) {
 	orders, err := s.repository.LoadOrders()
 	if err != nil {
-		return models.Order{}, fmt.Errorf("error reading all oreders %s: %v", id, err)
+		return models.Order{}, fmt.Errorf("Order with ID %s not found", id)
 	}
 
 	for i := 0; i < len(orders); i++ {

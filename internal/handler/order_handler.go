@@ -2,9 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
-	"net/http"
+	"hot-coffee/utils"
 )
 
 type OrderHandlerInterface interface {
@@ -74,6 +76,7 @@ func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request,
 	var changeOrder models.Order
 	if err := json.NewDecoder(r.Body).Decode(&changeOrder); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.ErrorInJSON(w, 400, err)
 		return
 	}
 
@@ -81,19 +84,15 @@ func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request,
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	} else {
-		w.WriteHeader(http.StatusOK)
-
-		json.NewEncoder(w).Encode(order)
+		utils.ResponseInJSON(w, order)
 	}
 }
 
 func (h *OrderHandler) HandleCloseOrder(w http.ResponseWriter, r *http.Request, orderID string) {
 	if order, err := h.orderService.CloseOrder(orderID); err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, 404, err)
 		return
 	} else {
-		w.WriteHeader(http.StatusOK)
-
-		json.NewEncoder(w).Encode(order)
+		utils.ResponseInJSON(w, order)
 	}
 }

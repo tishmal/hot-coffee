@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"hot-coffee/models"
@@ -75,22 +74,11 @@ func (r *OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
 }
 
 func (r *OrderRepositoryJSON) GetOrderByID(id string) (*models.Order, error) {
-	// Открываем файл с данными
-	data, err := ioutil.ReadFile("data/orders.json")
+	orders, err := r.LoadOrders()
 	if err != nil {
-		return nil, fmt.Errorf("Error reading file: %v", err)
+		return &models.Order{}, err
 	}
 
-	// Слайс для хранения всех заказов
-	var orders []models.Order
-
-	// Парсим JSON из файла в структуру
-	err = json.Unmarshal(data, &orders)
-	if err != nil {
-		log.Fatalf("Error unmarshaling JSON: %v", err)
-	}
-
-	// Проверяем, что заказы есть в данных
 	if len(orders) > 0 {
 		for i := 0; i < len(orders); i++ {
 			if orders[i].ID == id {
@@ -102,19 +90,9 @@ func (r *OrderRepositoryJSON) GetOrderByID(id string) (*models.Order, error) {
 }
 
 func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
-	// Открываем файл с данными
-	data, err := ioutil.ReadFile("data/orders.json")
+	orders, err := r.LoadOrders()
 	if err != nil {
-		return nil, fmt.Errorf("Error reading file: %v", err)
-	}
-
-	// Слайс для хранения всех заказов
-	var orders []models.Order
-
-	// Парсим JSON из файла в структуру
-	err = json.Unmarshal(data, &orders)
-	if err != nil {
-		log.Fatalf("Error unmarshaling JSON: %v", err)
+		return &models.Order{}, err
 	}
 
 	for i := 0; i < len(orders); i++ {

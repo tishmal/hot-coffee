@@ -81,12 +81,13 @@ func (m *MenuService) DeleteMenuItemByID(id string) error {
 }
 
 func (m *MenuService) UpdateMenu(id string, changeMenu models.MenuItem) (models.MenuItem, error) {
+	if changeMenu.Description == "" || changeMenu.ID == "" || changeMenu.Price == 0 || changeMenu.Name == "" || changeMenu.Ingredients == nil {
+		return models.MenuItem{}, errors.New("invalid request body")
+	}
+
 	menu, err := m.repository.LoadMenuItems()
 	if err != nil {
 		return models.MenuItem{}, errors.New("invalid load menu items")
-	}
-	if changeMenu.Description == "" || changeMenu.ID == "" || changeMenu.Price == 0 || changeMenu.Name == "" || changeMenu.Ingredients == nil {
-		return models.MenuItem{}, errors.New("invalid request body")
 	}
 
 	for i := 0; i < len(menu); i++ {

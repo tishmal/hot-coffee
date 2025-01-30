@@ -3,9 +3,10 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
+
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
-	"log"
 )
 
 type InventoryServiceInterface interface {
@@ -87,6 +88,10 @@ func (h *InventoryService) DeleteInventoryItemByID(id string) error {
 }
 
 func (h *InventoryService) UpdateInventoryItem(inventoryItemID string, changedInventoryItem models.InventoryItem) (models.InventoryItem, error) {
+	if changedInventoryItem.Name == "" || changedInventoryItem.Quantity == 0 || changedInventoryItem.Unit == "" {
+		return models.InventoryItem{}, errors.New("invalid request body")
+	}
+
 	inventoryItem, err := h.repository.GetAllInventory()
 	if err != nil {
 		return models.InventoryItem{}, errors.New("invalid load inventory items")
@@ -98,7 +103,11 @@ func (h *InventoryService) UpdateInventoryItem(inventoryItemID string, changedIn
 			inventoryItem[i].Quantity = changedInventoryItem.Quantity
 			inventoryItem[i].Unit = changedInventoryItem.Unit
 			h.repository.SaveInventory(inventoryItem)
-			return inventoryItem[i], nil
+			if changedInventoryItem.IngredientID != inventoryItem[i].IngredientID {
+				return models.InventoryItem{}, errors.New("cannot change ID")
+			} else {
+				return inventoryItem[i], nil
+			}
 		}
 	}
 	return models.InventoryItem{}, errors.New("invalid ID in inventory items")
