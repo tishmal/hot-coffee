@@ -3,8 +3,9 @@ package dal
 import (
 	"encoding/json"
 	"fmt"
-	"hot-coffee/models"
 	"os"
+
+	"hot-coffee/models"
 )
 
 type InventoryRepositoryInterface interface {

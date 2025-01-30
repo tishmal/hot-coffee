@@ -2,10 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
 	"hot-coffee/utils"
-	"net/http"
 )
 
 type InventoryHandlerInterface interface {
@@ -46,4 +47,15 @@ func (h *InventoryHandler) HandleGetAllInventory(w http.ResponseWriter, r *http.
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(inventories)
+}
+
+func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http.Request, id string) {
+	inventory, err := h.inventoryService.GetInventoryByID(id)
+	if err != nil {
+		utils.ErrorInJSON(w, 404, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(inventory)
 }

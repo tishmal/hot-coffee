@@ -3,13 +3,14 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
+	"strings"
+
 	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
 	"hot-coffee/internal/service"
-	"log"
-	"net/http"
-	"strings"
 )
 
 func main() {
@@ -40,7 +41,7 @@ func main() {
 	addr := fmt.Sprintf(":%d", *port)
 
 	// Запуск браузера
-	// go helper.OpenBrowser(addr)
+	go helper.OpenBrowser(addr)
 
 	// Запуск HTTP сервера
 	log.Printf("The server is running on the port %s...\n", addr)
@@ -59,7 +60,7 @@ func handleRequestsInventory(inventoryHandler handler.InventoryHandler) http.Han
 			if len(parts) == 1 {
 				inventoryHandler.HandleGetAllInventory(w, r)
 			} else if len(parts) == 2 {
-				// orderHandler.HandleGetOrderById(w, r, parts[1])
+				inventoryHandler.HandleGetInventoryById(w, r, parts[1])
 			} else {
 				http.Error(w, "Not Found", http.StatusNotFound)
 			}
