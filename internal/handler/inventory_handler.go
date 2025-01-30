@@ -27,7 +27,7 @@ func NewInventoryHandler(_inventoryService service.InventoryService) InventoryHa
 func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.Request) {
 	var newInventory models.InventoryItem
 	if err := json.NewDecoder(r.Body).Decode(&newInventory); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	}
 
@@ -36,19 +36,17 @@ func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.
 		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	} else {
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(inventory)
+		utils.ResponseInJSON(w, inventory)
 	}
 }
 
 func (h *InventoryHandler) HandleGetAllInventory(w http.ResponseWriter, r *http.Request) {
 	inventories, err := h.inventoryService.GetAllInventory()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(inventories)
+	utils.ResponseInJSON(w, inventories)
 }
 
 func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http.Request, id string) {
@@ -64,7 +62,7 @@ func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http
 func (h *InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
 	err := h.inventoryService.DeleteInventoryItemByID(inventoryItemID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -74,15 +72,14 @@ func (h *InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *h
 func (h *InventoryHandler) HandleUpdateInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
 	var changedInventoryItem models.InventoryItem
 	if err := json.NewDecoder(r.Body).Decode(&changedInventoryItem); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	}
 
 	if item, err := h.inventoryService.UpdateInventoryItem(inventoryItemID, changedInventoryItem); err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(item)
+		utils.ResponseInJSON(w, item)
 	}
 }
