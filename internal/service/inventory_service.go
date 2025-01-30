@@ -2,16 +2,18 @@ package service
 
 import (
 	"errors"
-	"log"
-
+	"fmt"
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
+	"log"
 )
 
 type InventoryServiceInterface interface {
 	CreateInventory(Inventory models.InventoryItem) (models.InventoryItem, error)
 	GetAllInventory() ([]models.InventoryItem, error)
 	GetInventoryByID(id string) (models.InventoryItem, error)
+	DeleteInventoryItemByID(is string) error
+	UpdateInventoryItem(inventoryItemID string, changedInventoryItem models.InventoryItem) (models.InventoryItem, error)
 }
 
 type InventoryService struct {
@@ -59,4 +61,45 @@ func (s *InventoryService) GetInventoryByID(id string) (models.InventoryItem, er
 		return models.InventoryItem{}, errors.New("inventory is empty")
 	}
 	return models.InventoryItem{}, errors.New("invalid product ID in inventory items")
+}
+
+func (h *InventoryService) DeleteInventoryItemByID(id string) error {
+	inventoryItems, err := h.repository.GetAllInventory()
+	if err != nil {
+		return err
+	}
+
+	indexToDelete := -1
+	for i, item := range inventoryItems {
+		if item.IngredientID == id {
+			indexToDelete = i
+			break
+		}
+	}
+
+	if indexToDelete == -1 {
+		return fmt.Errorf("inventory item with ID %s not found", id)
+	}
+
+	inventoryItems = append(inventoryItems[:indexToDelete], inventoryItems[indexToDelete+1:]...)
+
+	return h.repository.SaveInventory(inventoryItems)
+}
+
+func (h *InventoryService) UpdateInventoryItem(inventoryItemID string, changedInventoryItem models.InventoryItem) (models.InventoryItem, error) {
+	inventoryItem, err := h.repository.GetAllInventory()
+	if err != nil {
+		return models.InventoryItem{}, errors.New("invalid load inventory items")
+	}
+
+	for i := 0; i < len(inventoryItem); i++ {
+		if inventoryItem[i].IngredientID == inventoryItemID {
+			inventoryItem[i].Name = changedInventoryItem.Name
+			inventoryItem[i].Quantity = changedInventoryItem.Quantity
+			inventoryItem[i].Unit = changedInventoryItem.Unit
+			h.repository.SaveInventory(inventoryItem)
+			return inventoryItem[i], nil
+		}
+	}
+	return models.InventoryItem{}, errors.New("invalid ID in inventory items")
 }

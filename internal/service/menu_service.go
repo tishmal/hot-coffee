@@ -3,10 +3,9 @@ package service
 import (
 	"errors"
 	"fmt"
-	"log"
-
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
+	"log"
 )
 
 type MenuServiceInterface interface {
@@ -85,13 +84,22 @@ func (m *MenuService) UpdateMenu(id string, changeMenu models.MenuItem) (models.
 	if err != nil {
 		return models.MenuItem{}, errors.New("invalid load menu items")
 	}
+	if changeMenu.Description == "" || changeMenu.ID == "" || changeMenu.Price == 0 || changeMenu.Name == "" || changeMenu.Ingredients == nil {
+		return models.MenuItem{}, errors.New("invalid request body")
+	}
 
 	for i := 0; i < len(menu); i++ {
 		if menu[i].ID == id {
 			menu[i].Name = changeMenu.Name
 			menu[i].Ingredients = changeMenu.Ingredients
+			menu[i].Description = changeMenu.Description
+			menu[i].Price = changeMenu.Price
 			m.repository.SaveMenuItems(menu)
-			return menu[i], nil
+			if changeMenu.ID != menu[i].ID {
+				return models.MenuItem{}, errors.New("cannot change ID")
+			} else {
+				return menu[i], nil
+			}
 		}
 	}
 	return models.MenuItem{}, errors.New("invalid ID in menu items")

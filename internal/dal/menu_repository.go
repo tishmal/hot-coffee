@@ -6,6 +6,7 @@ import (
 	"hot-coffee/models"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 type MenuRepositoryInterface interface {
@@ -22,19 +23,20 @@ func NewMenuRepositoryJSON(filePath string) *MenuRepositoryJSON {
 	return &MenuRepositoryJSON{filePath: filePath}
 }
 
-func (r *MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
-	menuItems, err := r.LoadMenuItems()
+func (m *MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
+	menuItems, err := m.LoadMenuItems()
 	if err != nil {
 		return err
 	}
 
 	menuItems = append(menuItems, menuItem)
 
-	return saveMenuItems(menuItems)
+	return m.saveMenuItems(menuItems)
 }
 
-func saveMenuItems(menuItems []models.MenuItem) error {
-	file, err := os.OpenFile("data/menu_items.json", os.O_RDWR|os.O_CREATE, 0644)
+func (m *MenuRepositoryJSON) saveMenuItems(menuItems []models.MenuItem) error {
+	filePath := filepath.Join(m.filePath, "menu_items.json")
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("could not create menu file: %v", err)
 	}
@@ -50,7 +52,8 @@ func saveMenuItems(menuItems []models.MenuItem) error {
 }
 
 func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
-	file, err := os.Open("data/menu_items.json")
+	filePath := filepath.Join(m.filePath, "menu_items.json")
+	file, err := os.Open(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []models.MenuItem{}, nil
@@ -69,13 +72,14 @@ func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
 
 func (r *MenuRepositoryJSON) SaveMenuItems(menuItems []models.MenuItem) error {
 	// Запись обновленных данных в файл
+	filePath := filepath.Join(r.filePath, "menu_items.json")
 	updatedData, err := json.MarshalIndent(menuItems, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshaling menu items: %v", err)
 	}
 
 	// Сохранение в файл
-	err = ioutil.WriteFile("data/menu_items.json", updatedData, os.ModePerm)
+	err = ioutil.WriteFile(filePath, updatedData, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error writing to menu items file: %v", err)
 	}

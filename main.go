@@ -3,19 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
-	"strings"
-
 	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
 	"hot-coffee/internal/service"
+	"log"
+	"net/http"
+	"os"
+	"strings"
 )
 
 func main() {
 	port := flag.Int("port", 8080, "Port number to listen on")
 	help := flag.Bool("help", false, "Show help")
+	dir := flag.String("dir", "data", "Directory path for storing data")
 	flag.Parse()
 
 	if *help {
@@ -23,28 +24,39 @@ func main() {
 		return
 	}
 	// 1
-	orderRepo := dal.NewOrderRepositoryJSON("")
+	orderRepo := dal.NewOrderRepositoryJSON(*dir)
 	orderService := service.NewOrderService(orderRepo)
 	orderHandler := handler.NewOrderHandler(*orderService)
 	// 2
-	inventoryRepo := dal.NewInventoryRepositoryJSON("")
+	inventoryRepo := dal.NewInventoryRepositoryJSON(*dir)
 	inventoryService := service.NewInventoryService(inventoryRepo)
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
 
+	menuRepo := dal.NewMenuRepositoryJSON(*dir)
+	menuService := service.NewMenuService(menuRepo)
+	menuHandler := handler.NewMenuHandler(menuService)
+
 	http.HandleFunc("/orders", handleRequestsOrders(orderHandler))
 	http.HandleFunc("/orders/", handleRequestsOrders(orderHandler))
-	// http.HandleFunc("/menu", menuHandler)
-	// http.HandleFunc("/menu/", menuHandler)
+
+	http.HandleFunc("/menu", handleMenu(menuHandler))
+	http.HandleFunc("/menu/", handleMenu(menuHandler))
+	//
 	http.HandleFunc("/inventory", handleRequestsInventory(inventoryHandler))
 	http.HandleFunc("/inventory/", handleRequestsInventory(inventoryHandler))
 
 	addr := fmt.Sprintf(":%d", *port)
 
+	if err := os.MkdirAll(*dir, 0o755); err != nil {
+		fmt.Printf("Error creating data directory: %v\n", err)
+		os.Exit(1)
+	}
+
 	// Запуск браузера
 	// go helper.OpenBrowser(addr)
 
 	// Запуск HTTP сервера
-	log.Printf("The server is running on the port %s...\n", addr)
+	log.Printf("Server running on port %s with BaseDir %s\n", addr, *dir)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
@@ -72,13 +84,13 @@ func handleRequestsInventory(inventoryHandler handler.InventoryHandler) http.Han
 			}
 		case http.MethodPut:
 			if len(parts) == 2 {
-				// orderHandler.HandleUpdateOrder(w, r, parts[1])
+				inventoryHandler.HandleUpdateInventoryItem(w, r, parts[1])
 			} else {
 				http.Error(w, "Bad Request", http.StatusBadRequest)
 			}
 		case http.MethodDelete:
 			if len(parts) == 2 {
-				// orderHandler.HandleDeleteOrder(w, r, parts[1])
+				inventoryHandler.HandleDeleteInventoryItem(w, r, parts[1])
 			} else {
 				http.Error(w, "Not Found", http.StatusNotFound)
 			}
@@ -122,6 +134,45 @@ func handleRequestsOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 			} else {
 				http.Error(w, "Not Found", http.StatusNotFound)
 			}
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	}
+}
+
+func handleMenu(menuHandler *handler.MenuHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := strings.Trim(r.URL.Path, "/")
+		parts := strings.SplitN(path, "/", 2)
+
+		switch r.Method {
+		case http.MethodPost:
+			if len(parts) == 1 {
+				menuHandler.HandleAddMenuItem(w, r)
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		case http.MethodGet:
+			if len(parts) == 1 {
+				menuHandler.HandleGetAllMenuItems(w, r)
+			} else if len(parts) == 2 {
+				menuHandler.HandleGetMenuItemById(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		case http.MethodPut:
+			if len(parts) == 2 {
+				menuHandler.HandleUpdateMenu(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		case http.MethodDelete:
+			if len(parts) == 2 {
+				menuHandler.HandleDeleteMenuItemById(w, r, parts[1])
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}

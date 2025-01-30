@@ -2,16 +2,18 @@ package handler
 
 import (
 	"encoding/json"
-	"net/http"
-
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
 	"hot-coffee/utils"
+	"net/http"
 )
 
 type InventoryHandlerInterface interface {
 	HandleCreateInventory(w http.ResponseWriter, r *http.Request)
 	HandleGetAllInventory(w http.ResponseWriter, r *http.Request)
+	HandleGetInventoryById(w http.ResponseWriter, r *http.Request, id string)
+	HandleDeleteInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string)
+	HandleUpdateInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string)
 }
 
 type InventoryHandler struct {
@@ -57,4 +59,30 @@ func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http
 	}
 
 	utils.ResponseInJSON(w, inventory)
+}
+
+func (h *InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
+	err := h.inventoryService.DeleteInventoryItemByID(inventoryItemID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+}
+
+func (h *InventoryHandler) HandleUpdateInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
+	var changedInventoryItem models.InventoryItem
+	if err := json.NewDecoder(r.Body).Decode(&changedInventoryItem); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if item, err := h.inventoryService.UpdateInventoryItem(inventoryItemID, changedInventoryItem); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	} else {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(item)
+	}
 }
