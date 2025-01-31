@@ -36,7 +36,7 @@ func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.
 		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	} else {
-		utils.ResponseInJSON(w, inventory)
+		utils.ResponseInJSON(w, 201, inventory)
 	}
 }
 
@@ -46,7 +46,7 @@ func (h *InventoryHandler) HandleGetAllInventory(w http.ResponseWriter, r *http.
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 	}
 
-	utils.ResponseInJSON(w, inventories)
+	utils.ResponseInJSON(w, 200, inventories)
 }
 
 func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http.Request, id string) {
@@ -56,7 +56,7 @@ func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http
 		return
 	}
 
-	utils.ResponseInJSON(w, inventory)
+	utils.ResponseInJSON(w, 200, inventory)
 }
 
 func (h *InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
@@ -66,7 +66,7 @@ func (h *InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *h
 		return
 	}
 
-	w.WriteHeader(http.StatusNotFound)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *InventoryHandler) HandleUpdateInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
@@ -80,6 +80,6 @@ func (h *InventoryHandler) HandleUpdateInventoryItem(w http.ResponseWriter, r *h
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
-		utils.ResponseInJSON(w, item)
+		utils.ResponseInJSON(w, 200, item)
 	}
 }

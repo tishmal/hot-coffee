@@ -22,11 +22,15 @@ type OrderServiceInterface interface {
 }
 
 type OrderService struct {
-	repository dal.OrderRepositoryInterface
+	repository  dal.OrderRepositoryInterface
+	menuService MenuService
 }
 
-func NewOrderService(repository dal.OrderRepositoryInterface) *OrderService {
-	return &OrderService{repository: repository}
+func NewOrderService(_repository dal.OrderRepositoryInterface, _menuService MenuService) *OrderService {
+	return &OrderService{
+		repository:  _repository,
+		menuService: _menuService,
+	}
 }
 
 func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
@@ -37,14 +41,47 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	newID := helper.GenerateID()
 
 	for {
-		if result, err := s.repository.GetOrderByID(strconv.Itoa(int(newID))); result == nil && err != nil {
+		if result, err := s.repository.GetOrderByID("order" + strconv.Itoa(int(newID))); result == nil && err != nil {
 			break
 		}
 		newID = helper.GenerateID()
 	}
 
-	order.ID = strconv.Itoa(int(newID))
+	menu, err := s.menuService.repository.LoadMenuItems()
+	if err != nil {
+		return models.Order{}, err
+	}
 
+	// Прежде чем перейдём в наличие ингридиентов, проверяем меню:
+	// Валидация на соответсвие отсылаемого запросом и исполняемого заказа с тем что есть в меню
+	// 1. Добавляем в массивы данные которые совпали с теми, что хранятся в menu.json
+	var idshki []string
+	for i := 0; i < len(menu); i++ {
+		for _, item := range order.Items {
+			if item.ProductID == menu[i].ID {
+				idshki = append(idshki, item.ProductID)
+			}
+		}
+	}
+	// 2. Перебираем заказ и пробиваем на валидацию
+	for _, item := range order.Items {
+		err := utils.ValidateQuantity(float64(item.Quantity)) // преждевременная валидация на большие и отрицательные цифрры она не плоха
+		if err != nil {
+			return models.Order{}, err
+		}
+
+		if len(idshki) == 0 {
+			return models.Order{}, fmt.Errorf("Invalid product ID: %s. Product not found in the menu.", item.ProductID)
+		}
+
+		for i := 0; i < len(idshki); i++ {
+			if item.ProductID != idshki[i] {
+				return models.Order{}, fmt.Errorf("Invalid product ID: %s. Product not found in the menu.", item.ProductID)
+			}
+		}
+	}
+
+	order.ID = "order" + strconv.Itoa(int(newID))
 	order.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 	order.Status = "open"
 

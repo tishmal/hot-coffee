@@ -34,10 +34,10 @@ func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 	}
 
 	if order, err := h.orderService.CreateOrder(newOrder); err != nil {
-		utils.ErrorInJSON(w, http.StatusInternalServerError, err)
+		utils.ErrorInJSON(w, 400, err)
 		return
 	} else {
-		utils.ResponseInJSON(w, order)
+		utils.ResponseInJSON(w, 201, order)
 	}
 }
 
@@ -47,7 +47,7 @@ func (h *OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 	}
 
-	utils.ResponseInJSON(w, orders)
+	utils.ResponseInJSON(w, 200, orders)
 }
 
 func (h *OrderHandler) HandleGetOrderById(w http.ResponseWriter, r *http.Request, orderID string) {
@@ -56,7 +56,7 @@ func (h *OrderHandler) HandleGetOrderById(w http.ResponseWriter, r *http.Request
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	}
-	utils.ResponseInJSON(w, order)
+	utils.ResponseInJSON(w, 200, order)
 }
 
 func (h *OrderHandler) HandleDeleteOrder(w http.ResponseWriter, r *http.Request, orderID string) {
@@ -65,7 +65,7 @@ func (h *OrderHandler) HandleDeleteOrder(w http.ResponseWriter, r *http.Request,
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	}
-	utils.ResponseInJSON(w, order)
+	utils.ResponseInJSON(w, 204, order)
 }
 
 func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request, orderID string) {
@@ -79,7 +79,7 @@ func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request,
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
-		utils.ResponseInJSON(w, order)
+		utils.ResponseInJSON(w, 200, order)
 	}
 }
 
@@ -88,6 +88,6 @@ func (h *OrderHandler) HandleCloseOrder(w http.ResponseWriter, r *http.Request, 
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
-		utils.ResponseInJSON(w, order)
+		utils.ResponseInJSON(w, 200, order)
 	}
 }

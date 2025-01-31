@@ -50,7 +50,7 @@ func (m *MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	utils.ResponseInJSON(w, NewMenuItem)
+	utils.ResponseInJSON(w, 201, NewMenuItem)
 }
 
 func (m *MenuHandler) HandleGetAllMenuItems(w http.ResponseWriter, r *http.Request) {
@@ -61,11 +61,11 @@ func (m *MenuHandler) HandleGetAllMenuItems(w http.ResponseWriter, r *http.Reque
 	}
 
 	if len(items) == 0 {
-		utils.ResponseInJSON(w, []models.MenuItem{})
+		utils.ResponseInJSON(w, 200, []models.MenuItem{})
 		return
 	}
 
-	utils.ResponseInJSON(w, items)
+	utils.ResponseInJSON(w, 200, items)
 }
 
 func (m *MenuHandler) HandleGetMenuItemById(w http.ResponseWriter, r *http.Request, menuID string) {
@@ -80,7 +80,7 @@ func (m *MenuHandler) HandleGetMenuItemById(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	utils.ResponseInJSON(w, item)
+	utils.ResponseInJSON(w, 200, item)
 }
 
 func (m *MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Request, menuID string) {
@@ -119,6 +119,6 @@ func (m *MenuHandler) HandleUpdateMenu(w http.ResponseWriter, r *http.Request, m
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
-		utils.ResponseInJSON(w, menu)
+		utils.ResponseInJSON(w, 200, menu)
 	}
 }

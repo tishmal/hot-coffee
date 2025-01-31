@@ -24,10 +24,6 @@ func main() {
 		helper.PrintUsage()
 		return
 	}
-	// 1
-	orderRepo := dal.NewOrderRepositoryJSON(*dir)
-	orderService := service.NewOrderService(orderRepo)
-	orderHandler := handler.NewOrderHandler(*orderService)
 	// 2
 	inventoryRepo := dal.NewInventoryRepositoryJSON(*dir)
 	inventoryService := service.NewInventoryService(inventoryRepo)
@@ -36,6 +32,11 @@ func main() {
 	menuRepo := dal.NewMenuRepositoryJSON(*dir)
 	menuService := service.NewMenuService(menuRepo)
 	menuHandler := handler.NewMenuHandler(menuService)
+
+	// 1
+	orderRepo := dal.NewOrderRepositoryJSON(*dir)
+	orderService := service.NewOrderService(orderRepo, *menuService)
+	orderHandler := handler.NewOrderHandler(*orderService)
 
 	http.HandleFunc("/orders", handleRequestsOrders(orderHandler))
 	http.HandleFunc("/orders/", handleRequestsOrders(orderHandler))

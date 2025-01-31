@@ -23,9 +23,9 @@ func ErrorInJSON(w http.ResponseWriter, statusCode int, err error) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func ResponseInJSON(w http.ResponseWriter, object interface{}) {
+func ResponseInJSON(w http.ResponseWriter, statusCode int, object interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(object)
 }
 
