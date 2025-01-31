@@ -7,6 +7,7 @@ import (
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
 	"hot-coffee/internal/service"
+	"hot-coffee/utils"
 	"log"
 	"net/http"
 	"os"
@@ -47,9 +48,17 @@ func main() {
 
 	addr := fmt.Sprintf(":%d", *port)
 
+	if err := utils.IsValidName(*dir); err != nil {
+		log.Fatal("Invalid directory name: %w", err)
+	}
+
 	if err := os.MkdirAll(*dir, 0o755); err != nil {
-		fmt.Printf("Error creating data directory: %v\n", err)
+		log.Fatalf("Error creating data directory: %v\n", err)
 		os.Exit(1)
+	}
+
+	if *port < 0 || *port > 65535 {
+		log.Fatal("Invalid port number")
 	}
 
 	// Запуск браузера

@@ -2,11 +2,11 @@ package handler
 
 import (
 	"encoding/json"
-	"net/http"
-
+	"fmt"
 	"hot-coffee/internal/service"
 	"hot-coffee/models"
 	"hot-coffee/utils"
+	"net/http"
 )
 
 type OrderHandlerInterface interface {
@@ -29,59 +29,54 @@ func NewOrderHandler(orderService service.OrderService) *OrderHandler {
 func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	var newOrder models.Order
 	if err := json.NewDecoder(r.Body).Decode(&newOrder); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.ErrorInJSON(w, http.StatusBadRequest, fmt.Errorf("invalid JSON format: %v", err))
 		return
 	}
 
 	if order, err := h.orderService.CreateOrder(newOrder); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.ErrorInJSON(w, http.StatusInternalServerError, err)
 		return
 	} else {
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(order)
+		utils.ResponseInJSON(w, order)
 	}
 }
 
 func (h *OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request) {
 	orders, err := h.orderService.GetAllOrders()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orders)
+	utils.ResponseInJSON(w, orders)
 }
 
 func (h *OrderHandler) HandleGetOrderById(w http.ResponseWriter, r *http.Request, orderID string) {
 	order, err := h.orderService.GetOrderByID(orderID)
 	if err != nil || &order == nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(order)
+	utils.ResponseInJSON(w, order)
 }
 
 func (h *OrderHandler) HandleDeleteOrder(w http.ResponseWriter, r *http.Request, orderID string) {
 	order, err := h.orderService.DeleteOrder(orderID)
 	if err != nil || &order == nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(order)
+	utils.ResponseInJSON(w, order)
 }
 
 func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request, orderID string) {
 	var changeOrder models.Order
 	if err := json.NewDecoder(r.Body).Decode(&changeOrder); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		utils.ErrorInJSON(w, 400, err)
+		utils.ErrorInJSON(w, http.StatusBadRequest, err)
 		return
 	}
 
 	if order, err := h.orderService.UpdateOrder(orderID, changeOrder); err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
 		utils.ResponseInJSON(w, order)
@@ -90,7 +85,7 @@ func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request,
 
 func (h *OrderHandler) HandleCloseOrder(w http.ResponseWriter, r *http.Request, orderID string) {
 	if order, err := h.orderService.CloseOrder(orderID); err != nil {
-		utils.ErrorInJSON(w, 404, err)
+		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
 	} else {
 		utils.ResponseInJSON(w, order)

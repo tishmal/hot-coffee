@@ -3,10 +3,10 @@ package dal
 import (
 	"encoding/json"
 	"fmt"
+	"hot-coffee/models"
 	"io/ioutil"
 	"os"
-
-	"hot-coffee/models"
+	"path/filepath"
 )
 
 type OrderRepositoryInterface interface {
@@ -26,9 +26,6 @@ func NewOrderRepositoryJSON(filePath string) *OrderRepositoryJSON {
 	return &OrderRepositoryJSON{filePath: filePath}
 }
 
-const ordersFile = "data/orders.json"
-
-// Сохранение заказа в JSON файл
 func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 	orders, err := r.LoadOrders()
 	if err != nil {
@@ -40,16 +37,16 @@ func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 	return r.SaveOrders(orders)
 }
 
-// Запись заказов в файл
 func (r *OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
-	file, err := os.Create("data/orders.json")
+	filePath := filepath.Join(r.filePath, "orders.json")
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("could not create orders file: %v", err)
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ") // Форматированный вывод JSON
+	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(orders); err != nil {
 		return fmt.Errorf("could not encode orders to file: %v", err)
 	}
@@ -57,9 +54,9 @@ func (r *OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
 	return nil
 }
 
-// Загрузка всех заказов из файла
 func (r *OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
-	file, err := os.Open(ordersFile)
+	filePath := filepath.Join(r.filePath, "orders.json")
+	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}

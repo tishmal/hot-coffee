@@ -3,13 +3,13 @@ package service
 import (
 	"errors"
 	"fmt"
-	"log"
-	"strconv"
-	"time"
-
 	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
+	"hot-coffee/utils"
+	"log"
+	"strconv"
+	"time"
 )
 
 type OrderServiceInterface interface {
@@ -29,8 +29,11 @@ func NewOrderService(repository dal.OrderRepositoryInterface) *OrderService {
 	return &OrderService{repository: repository}
 }
 
-// Создание нового заказа
 func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
+	if err := utils.IsValidName(order.CustomerName); err != nil {
+		return models.Order{}, err
+	}
+
 	newID := helper.GenerateID()
 
 	for {
@@ -45,15 +48,12 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	order.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 	order.Status = "open"
 
-	// Здесь можно добавить проверки и логику обработки заказа
 	if err := s.repository.CreateOrder(order); err != nil {
 		return order, err
 	}
 	log.Printf("Order created: %s", order.ID)
 	return order, nil
 }
-
-// Дополнительные функции для обработки заказов (например, обновление статуса)
 
 func (s *OrderService) GetAllOrders() ([]models.Order, error) {
 	orders, err := s.repository.LoadOrders()

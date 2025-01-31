@@ -29,6 +29,12 @@ func (m *MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
 		return err
 	}
 
+	for _, item := range menuItems {
+		if item.ID == menuItem.ID {
+			return fmt.Errorf("menu item with ID %s already exists", menuItem.ID)
+		}
+	}
+
 	menuItems = append(menuItems, menuItem)
 
 	return m.saveMenuItems(menuItems)
@@ -43,7 +49,7 @@ func (m *MenuRepositoryJSON) saveMenuItems(menuItems []models.MenuItem) error {
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ") // Форматированный вывод JSON
+	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(menuItems); err != nil {
 		return fmt.Errorf("could not encode menu items to file: %v", err)
 	}
@@ -71,14 +77,12 @@ func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
 }
 
 func (r *MenuRepositoryJSON) SaveMenuItems(menuItems []models.MenuItem) error {
-	// Запись обновленных данных в файл
 	filePath := filepath.Join(r.filePath, "menu_items.json")
 	updatedData, err := json.MarshalIndent(menuItems, "", "  ")
 	if err != nil {
 		return fmt.Errorf("error marshaling menu items: %v", err)
 	}
 
-	// Сохранение в файл
 	err = ioutil.WriteFile(filePath, updatedData, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error writing to menu items file: %v", err)

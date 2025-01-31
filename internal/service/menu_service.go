@@ -3,10 +3,10 @@ package service
 import (
 	"errors"
 	"fmt"
-	"log"
-
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
+	"hot-coffee/utils"
+	"log"
 )
 
 type MenuServiceInterface interface {
@@ -26,6 +26,14 @@ func NewMenuService(repository dal.MenuRepositoryInterface) *MenuService {
 }
 
 func (m *MenuService) AddMenuItem(menuItem models.MenuItem) error {
+	if err := utils.ValidateID(menuItem.ID); err != nil {
+		return fmt.Errorf("invalid product ID: %v", err)
+	}
+
+	if err := utils.ValidateMenuItem(menuItem); err != nil {
+		return err
+	}
+
 	if err := m.repository.AddMenuItem(menuItem); err != nil {
 		return err
 	}
@@ -36,16 +44,20 @@ func (m *MenuService) AddMenuItem(menuItem models.MenuItem) error {
 func (m *MenuService) GetAllMenuItems() ([]models.MenuItem, error) {
 	items, err := m.repository.LoadMenuItems()
 	if err != nil {
-		log.Printf("items list created:")
+		log.Printf("could not load menu items: %v", err)
 		return nil, fmt.Errorf("could not load menu items: %v", err)
 	}
 	return items, nil
 }
 
 func (m *MenuService) GetMenuItemByID(id string) (models.MenuItem, error) {
+	if err := utils.ValidateID(id); err != nil {
+		return models.MenuItem{}, fmt.Errorf("invalid menu ID: %v", err)
+	}
+
 	menuItems, err := m.repository.LoadMenuItems()
 	if err != nil {
-		return models.MenuItem{}, err
+		return models.MenuItem{}, fmt.Errorf("could not load menu items: %v", err)
 	}
 
 	for _, item := range menuItems {
@@ -58,9 +70,13 @@ func (m *MenuService) GetMenuItemByID(id string) (models.MenuItem, error) {
 }
 
 func (m *MenuService) DeleteMenuItemByID(id string) error {
+	if err := utils.ValidateID(id); err != nil {
+		return fmt.Errorf("invalid menu ID: %v", err)
+	}
+
 	menuItems, err := m.repository.LoadMenuItems()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not load menu items")
 	}
 
 	indexToDelete := -1
@@ -77,32 +93,42 @@ func (m *MenuService) DeleteMenuItemByID(id string) error {
 
 	menuItems = append(menuItems[:indexToDelete], menuItems[indexToDelete+1:]...)
 
-	return m.repository.SaveMenuItems(menuItems)
+	if err := m.repository.SaveMenuItems(menuItems); err != nil {
+		return fmt.Errorf("could not save menu items")
+	}
+
+	return nil
 }
 
 func (m *MenuService) UpdateMenu(id string, changeMenu models.MenuItem) (models.MenuItem, error) {
-	if changeMenu.Description == "" || changeMenu.ID == "" || changeMenu.Price == 0 || changeMenu.Name == "" || changeMenu.Ingredients == nil {
-		return models.MenuItem{}, errors.New("invalid request body")
+	if err := utils.ValidateID(id); err != nil {
+		return models.MenuItem{}, err
+	}
+
+	if err := utils.ValidateMenuItem(changeMenu); err != nil {
+		return models.MenuItem{}, err
 	}
 
 	menu, err := m.repository.LoadMenuItems()
 	if err != nil {
-		return models.MenuItem{}, errors.New("invalid load menu items")
+		return models.MenuItem{}, errors.New("unable to load menu items")
 	}
 
 	for i := 0; i < len(menu); i++ {
 		if menu[i].ID == id {
+			if changeMenu.ID != menu[i].ID {
+				return models.MenuItem{}, errors.New("cannot change the ID of the menu item")
+			}
 			menu[i].Name = changeMenu.Name
 			menu[i].Ingredients = changeMenu.Ingredients
 			menu[i].Description = changeMenu.Description
 			menu[i].Price = changeMenu.Price
 			m.repository.SaveMenuItems(menu)
-			if changeMenu.ID != menu[i].ID {
-				return models.MenuItem{}, errors.New("cannot change ID")
-			} else {
-				return menu[i], nil
+			if err != nil {
+				return models.MenuItem{}, fmt.Errorf("failed to save updated menu items: %v", err)
 			}
+			return menu[i], nil
 		}
 	}
-	return models.MenuItem{}, errors.New("invalid ID in menu items")
+	return models.MenuItem{}, errors.New("menu item not found")
 }
