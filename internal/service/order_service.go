@@ -106,6 +106,9 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 				newDataMenu = append(newDataMenu, item)
 			}
 		}
+		if err := utils.ValidateQuantity(float64(items.Quantity)); err != nil {
+			return models.Order{}, err
+		}
 	}
 
 	for _, items := range newDataMenu {
@@ -118,11 +121,13 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 				}
 				item.Quantity -= ingredient.Quantity
 				ingredientMap[ingredient.IngredientID] = item
-
-				if _, err := s.inventoryService.UpdateInventoryItem(ingredient.IngredientID, item); err != nil {
-					return models.Order{}, fmt.Errorf("Failed to update inventory ingredientID%v", ingredient.IngredientID)
-				}
 			}
+		}
+	}
+
+	for ingredientID, item := range ingredientMap {
+		if _, err := s.inventoryService.UpdateInventoryItem(ingredientID, item); err != nil {
+			return models.Order{}, fmt.Errorf("Failed to update inventory for ingredientID %v", ingredientID)
 		}
 	}
 

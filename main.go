@@ -38,6 +38,9 @@ func main() {
 	orderService := service.NewOrderService(orderRepo, *menuService, inventoryService)
 	orderHandler := handler.NewOrderHandler(*orderService)
 
+	reportService := service.NewReportService(*menuService, *orderService)
+	reportHandler := handler.NewReportHandler(reportService)
+
 	http.HandleFunc("/orders", handleRequestsOrders(orderHandler))
 	http.HandleFunc("/orders/", handleRequestsOrders(orderHandler))
 
@@ -46,6 +49,8 @@ func main() {
 	//
 	http.HandleFunc("/inventory", handleRequestsInventory(inventoryHandler))
 	http.HandleFunc("/inventory/", handleRequestsInventory(inventoryHandler))
+
+	http.HandleFunc("/reports/", handleRequestsReports(reportHandler))
 
 	addr := fmt.Sprintf(":%d", *port)
 
@@ -69,6 +74,26 @@ func main() {
 	log.Printf("Server running on port %s with BaseDir %s\n", addr, *dir)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func handleRequestsReports(reportHandler handler.ReportHandler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		path := strings.Trim(r.URL.Path, "/")
+		parts := strings.SplitN(path, "/", 2)
+
+		switch r.Method {
+		case http.MethodGet:
+			if len(parts) == 2 && parts[1] == "total-sales" {
+				reportHandler.HandleGetTotalSales(w, r)
+			} else if len(parts) == 2 && parts[1] == "popular-items" {
+				reportHandler.HandleGetPopulatItem(w, r)
+			} else {
+				http.Error(w, "Not Found", http.StatusNotFound)
+			}
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
 	}
 }
 
