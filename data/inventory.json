@@ -2,19 +2,19 @@
   {
     "ingredient_id": "flour",
     "name": "Flour",
-    "quantity": 10000,
+    "quantity": 0,
     "unit": "g"
   },
   {
     "ingredient_id": "blueberries",
     "name": "Blueberries",
-    "quantity": 5000,
-    "unit": "g"
+    "quantity": 800,
+    "unit": "g" 
   },
   {
     "ingredient_id": "sugar",
     "name": "Sugar",
-    "quantity": 5000,
+    "quantity": 4700,
     "unit": "g"
   },
   {
@@ -22,29 +22,5 @@
     "name": "Milk",
     "quantity": 5000,
     "unit": "ml"
-  },
-  {
-    "ingredient_id": "",
-    "name": "",
-    "quantity": 0,
-    "unit": ""
-  },
-  {
-    "ingredient_id": "",
-    "name": "",
-    "quantity": 0,
-    "unit": ""
-  },
-  {
-    "ingredient_id": "",
-    "name": "",
-    "quantity": 0,
-    "unit": ""
-  },
-  {
-    "ingredient_id": "",
-    "name": "",
-    "quantity": 0,
-    "unit": ""
   }
 ]

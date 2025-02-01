@@ -35,7 +35,7 @@ func main() {
 
 	// 1
 	orderRepo := dal.NewOrderRepositoryJSON(*dir)
-	orderService := service.NewOrderService(orderRepo, *menuService)
+	orderService := service.NewOrderService(orderRepo, *menuService, inventoryService)
 	orderHandler := handler.NewOrderHandler(*orderService)
 
 	http.HandleFunc("/orders", handleRequestsOrders(orderHandler))

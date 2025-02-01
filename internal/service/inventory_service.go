@@ -92,7 +92,7 @@ func (h *InventoryService) DeleteInventoryItemByID(id string) error {
 }
 
 func (h *InventoryService) UpdateInventoryItem(inventoryItemID string, changedInventoryItem models.InventoryItem) (models.InventoryItem, error) {
-	if changedInventoryItem.Name == "" || changedInventoryItem.Quantity == 0 || changedInventoryItem.Unit == "" {
+	if changedInventoryItem.Name == "" || changedInventoryItem.Quantity < 0 || changedInventoryItem.Unit == "" {
 		return models.InventoryItem{}, errors.New("invalid request body")
 	}
 
@@ -101,18 +101,26 @@ func (h *InventoryService) UpdateInventoryItem(inventoryItemID string, changedIn
 		return models.InventoryItem{}, errors.New("invalid load inventory items")
 	}
 
+	var itemToUpdate *models.InventoryItem
 	for i := 0; i < len(inventoryItem); i++ {
 		if inventoryItem[i].IngredientID == inventoryItemID {
+			if changedInventoryItem.IngredientID != inventoryItem[i].IngredientID {
+				return models.InventoryItem{}, errors.New("cannot change ingredient ID")
+			}
 			inventoryItem[i].Name = changedInventoryItem.Name
 			inventoryItem[i].Quantity = changedInventoryItem.Quantity
 			inventoryItem[i].Unit = changedInventoryItem.Unit
-			h.repository.SaveInventory(inventoryItem)
-			if changedInventoryItem.IngredientID != inventoryItem[i].IngredientID {
-				return models.InventoryItem{}, errors.New("cannot change ID")
-			} else {
-				return inventoryItem[i], nil
-			}
+			itemToUpdate = &inventoryItem[i]
+			break
 		}
 	}
-	return models.InventoryItem{}, errors.New("invalid ID in inventory items")
+	if itemToUpdate == nil {
+		return models.InventoryItem{}, errors.New("invalid ID in inventory items")
+	}
+
+	if err := h.repository.SaveInventory(inventoryItem); err != nil {
+		return models.InventoryItem{}, errors.New("failed to save updated inventory")
+	}
+
+	return *itemToUpdate, nil
 }

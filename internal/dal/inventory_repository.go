@@ -35,16 +35,16 @@ func (r InventoryRepositoryJSON) CreateInventory(inventory models.InventoryItem)
 
 func (r InventoryRepositoryJSON) SaveInventory(inventories []models.InventoryItem) error {
 	filePath := filepath.Join(r.filePath, "inventory.json")
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		return fmt.Errorf("could not create orders file: %v", err)
+		return fmt.Errorf("could not open or create inventory file: %v", err)
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ") // Форматированный вывод JSON
+	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(inventories); err != nil {
-		return fmt.Errorf("could not encode orders to file: %v", err)
+		return fmt.Errorf("could not encode inventory to file: %v", err)
 	}
 
 	return nil
@@ -52,9 +52,14 @@ func (r InventoryRepositoryJSON) SaveInventory(inventories []models.InventoryIte
 
 func (r InventoryRepositoryJSON) GetAllInventory() ([]models.InventoryItem, error) {
 	filePath := filepath.Join(r.filePath, "inventory.json")
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("inventory file does not exist: %v", err)
+	}
+
 	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not open inventory file: %v", err)
 	}
 	defer file.Close()
 

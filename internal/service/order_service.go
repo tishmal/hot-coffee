@@ -22,14 +22,16 @@ type OrderServiceInterface interface {
 }
 
 type OrderService struct {
-	repository  dal.OrderRepositoryInterface
-	menuService MenuService
+	repository       dal.OrderRepositoryInterface
+	menuService      MenuService
+	inventoryService InventoryService
 }
 
-func NewOrderService(_repository dal.OrderRepositoryInterface, _menuService MenuService) *OrderService {
+func NewOrderService(_repository dal.OrderRepositoryInterface, _menuService MenuService, _inventoryService InventoryService) *OrderService {
 	return &OrderService{
-		repository:  _repository,
-		menuService: _menuService,
+		repository:       _repository,
+		menuService:      _menuService,
+		inventoryService: _inventoryService,
 	}
 }
 
@@ -50,6 +52,11 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	menu, err := s.menuService.repository.LoadMenuItems()
 	if err != nil {
 		return models.Order{}, err
+	}
+
+	menuMap := make(map[string]models.MenuItem)
+	for _, items := range menu {
+		menuMap[items.ID] = items
 	}
 
 	// Прежде чем перейдём в наличие ингридиентов, проверяем меню:
@@ -77,6 +84,44 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 		for i := 0; i < len(idshki); i++ {
 			if item.ProductID != idshki[i] {
 				return models.Order{}, fmt.Errorf("Invalid product ID: %s. Product not found in the menu.", item.ProductID)
+			}
+		}
+	}
+
+	inventory, err := s.inventoryService.GetAllInventory()
+	if err != nil {
+		return models.Order{}, fmt.Errorf("Failed to retrieve inventory")
+	}
+
+	var newDataMenu []models.MenuItem
+
+	ingredientMap := make(map[string]models.InventoryItem)
+	for _, items := range inventory {
+		ingredientMap[items.IngredientID] = items
+	}
+
+	for _, items := range order.Items {
+		for i := 0; i < items.Quantity; i++ {
+			if item, exists := menuMap[items.ProductID]; exists {
+				newDataMenu = append(newDataMenu, item)
+			}
+		}
+	}
+
+	for _, items := range newDataMenu {
+		for _, ingredient := range items.Ingredients {
+			if item, exist := ingredientMap[ingredient.IngredientID]; exist {
+				fmt.Printf("Checking ingredient ID: %v, required: %v, available: %v\n",
+					ingredient.IngredientID, ingredient.Quantity, item.Quantity)
+				if ingredient.Quantity > item.Quantity {
+					return models.Order{}, fmt.Errorf("not enough quantity for ingredient ID %v: required %v, available %v", ingredient.IngredientID, ingredient.Quantity, item.Quantity)
+				}
+				item.Quantity -= ingredient.Quantity
+				ingredientMap[ingredient.IngredientID] = item
+
+				if _, err := s.inventoryService.UpdateInventoryItem(ingredient.IngredientID, item); err != nil {
+					return models.Order{}, fmt.Errorf("Failed to update inventory ingredientID%v", ingredient.IngredientID)
+				}
 			}
 		}
 	}
