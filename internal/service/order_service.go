@@ -54,11 +54,6 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 		return models.Order{}, err
 	}
 
-	menuMap := make(map[string]models.MenuItem)
-	for _, items := range menu {
-		menuMap[items.ID] = items
-	}
-
 	// Прежде чем перейдём в наличие ингридиентов, проверяем меню:
 	// Валидация на соответсвие отсылаемого запросом и исполняемого заказа с тем что есть в меню
 	// 1. Добавляем в массивы данные которые совпали с теми, что хранятся в menu.json
@@ -85,49 +80,6 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 			if item.ProductID != idshki[i] {
 				return models.Order{}, fmt.Errorf("Invalid product ID: %s. Product not found in the menu.", item.ProductID)
 			}
-		}
-	}
-
-	inventory, err := s.inventoryService.GetAllInventory()
-	if err != nil {
-		return models.Order{}, fmt.Errorf("Failed to retrieve inventory")
-	}
-
-	var newDataMenu []models.MenuItem
-
-	ingredientMap := make(map[string]models.InventoryItem)
-	for _, items := range inventory {
-		ingredientMap[items.IngredientID] = items
-	}
-
-	for _, items := range order.Items {
-		for i := 0; i < items.Quantity; i++ {
-			if item, exists := menuMap[items.ProductID]; exists {
-				newDataMenu = append(newDataMenu, item)
-			}
-		}
-		if err := utils.ValidateQuantity(float64(items.Quantity)); err != nil {
-			return models.Order{}, err
-		}
-	}
-
-	for _, items := range newDataMenu {
-		for _, ingredient := range items.Ingredients {
-			if item, exist := ingredientMap[ingredient.IngredientID]; exist {
-				fmt.Printf("Checking ingredient ID: %v, required: %v, available: %v\n",
-					ingredient.IngredientID, ingredient.Quantity, item.Quantity)
-				if ingredient.Quantity > item.Quantity {
-					return models.Order{}, fmt.Errorf("not enough quantity for ingredient ID %v: required %v, available %v", ingredient.IngredientID, ingredient.Quantity, item.Quantity)
-				}
-				item.Quantity -= ingredient.Quantity
-				ingredientMap[ingredient.IngredientID] = item
-			}
-		}
-	}
-
-	for ingredientID, item := range ingredientMap {
-		if _, err := s.inventoryService.UpdateInventoryItem(ingredientID, item); err != nil {
-			return models.Order{}, fmt.Errorf("Failed to update inventory for ingredientID %v", ingredientID)
 		}
 	}
 
@@ -178,6 +130,9 @@ func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.
 	}
 
 	for i := 0; i < len(orders); i++ {
+		if orders[i].Status == "closed" {
+			return models.Order{}, fmt.Errorf("order is closed")
+		}
 		if orders[i].ID == id {
 			orders[i].CustomerName = changeOrder.CustomerName
 			orders[i].CreatedAt = time.Now().UTC().Format(time.RFC3339)
@@ -197,6 +152,68 @@ func (s *OrderService) CloseOrder(id string) (models.Order, error) {
 	orders, err := s.repository.LoadOrders()
 	if err != nil {
 		return models.Order{}, fmt.Errorf("Order with ID %s not found", id)
+	}
+
+	orderId, err := s.repository.GetOrderByID(id)
+	if err != nil {
+		return models.Order{}, fmt.Errorf("Failed to retrieve order by ID%v", id)
+	}
+
+	if orderId.Status == "closed" {
+		return models.Order{}, fmt.Errorf("opration not allowed")
+	}
+
+	menu, err := s.menuService.repository.LoadMenuItems()
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	menuMap := make(map[string]models.MenuItem)
+	for _, items := range menu {
+		menuMap[items.ID] = items
+	}
+
+	inventory, err := s.inventoryService.GetAllInventory()
+	if err != nil {
+		return models.Order{}, fmt.Errorf("Failed to retrieve inventory")
+	}
+
+	var newDataMenu []models.MenuItem
+
+	ingredientMap := make(map[string]models.InventoryItem)
+	for _, items := range inventory {
+		ingredientMap[items.IngredientID] = items
+	}
+
+	for _, items := range orderId.Items {
+		for i := 0; i < items.Quantity; i++ {
+			if item, exists := menuMap[items.ProductID]; exists {
+				newDataMenu = append(newDataMenu, item)
+			}
+		}
+		if err := utils.ValidateQuantity(float64(items.Quantity)); err != nil {
+			return models.Order{}, err
+		}
+	}
+
+	for _, items := range newDataMenu {
+		for _, ingredient := range items.Ingredients {
+			if item, exist := ingredientMap[ingredient.IngredientID]; exist {
+				fmt.Printf("Checking ingredient ID: %v, required: %v, available: %v\n",
+					ingredient.IngredientID, ingredient.Quantity, item.Quantity)
+				if ingredient.Quantity > item.Quantity {
+					return models.Order{}, fmt.Errorf("not enough quantity for ingredient ID %v: required %v, available %v", ingredient.IngredientID, ingredient.Quantity, item.Quantity)
+				}
+				item.Quantity -= ingredient.Quantity
+				ingredientMap[ingredient.IngredientID] = item
+			}
+		}
+	}
+
+	for ingredientID, item := range ingredientMap {
+		if _, err := s.inventoryService.UpdateInventoryItem(ingredientID, item); err != nil {
+			return models.Order{}, fmt.Errorf("Failed to update inventory for ingredientID %v", ingredientID)
+		}
 	}
 
 	for i := 0; i < len(orders); i++ {

@@ -5,15 +5,19 @@
     "items": [
       {
         "product_id": "latte",
-        "quantity": 2
+        "quantity": 5
       },
       {
         "product_id": "muffin",
         "quantity": 1
+      },
+      {
+        "product_id": "gfddfsdfggf",
+        "quantity": 1
       }
     ],
     "status": "open",
-    "created_at": "2023-10-01T09:00:00Z"
+    "created_at": "2025-02-01T15:49:33Z"
   },
   {
     "order_id": "order124",
@@ -28,15 +32,15 @@
     "created_at": "2023-10-01T09:30:00Z"
   },
   {
-    "order_id": "order2",
-    "customer_name": "Bob Johnson",
+    "order_id": "order3",
+    "customer_name": "John Doe",
     "items": [
       {
         "product_id": "muffin",
-        "quantity": 5
+        "quantity": 10
       }
     ],
     "status": "open",
-    "created_at": "2025-02-01T14:08:27Z"
+    "created_at": "2025-02-01T15:28:47Z"
   }
 ]

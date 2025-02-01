@@ -19,7 +19,7 @@
     "product_id": "muffin",
     "name": "Blueberry Muffin",
     "description": "Freshly baked muffin with blueberries",
-    "price": 2.5,
+    "price": 2,
     "ingredients": [
       {
         "ingredient_id": "flour",

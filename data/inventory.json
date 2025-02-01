@@ -2,25 +2,25 @@
   {
     "ingredient_id": "flour",
     "name": "Flour",
-    "quantity": 9500,
+    "quantity": 9000,
     "unit": "g"
   },
   {
     "ingredient_id": "blueberries",
     "name": "Blueberries",
-    "quantity": 660,
+    "quantity": 560,
     "unit": "g"
   },
   {
     "ingredient_id": "sugar",
     "name": "Sugar",
-    "quantity": 4490,
+    "quantity": 4340,
     "unit": "g"
   },
   {
     "ingredient_id": "milk",
     "name": "Milk",
-    "quantity": 5000,
+    "quantity": 0,
     "unit": "ml"
   }
 ]
