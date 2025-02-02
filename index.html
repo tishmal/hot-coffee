@@ -173,6 +173,31 @@
       animation-delay: 2s;
     }
 
+    /* Стиль для текста "С нами будет жарко!" */
+    .hot-message {
+      font-size: 4em;
+      font-weight: bold;
+      color: #ff4500; /* Огненно-оранжевый цвет */
+      text-transform: uppercase;
+      text-shadow: 0px 0px 20px rgba(255, 69, 0, 0.7), 0px 0px 30px rgba(255, 69, 0, 0.6);
+      animation: fireEffect 1.5s infinite alternate;
+      margin-top: 20px;
+      position: absolute;
+      top: 10%;
+      width: 100%;
+      z-index: 3;
+    }
+
+    /* Анимация огненного текста */
+    @keyframes fireEffect {
+      0% {
+        text-shadow: 0px 0px 20px rgba(255, 69, 0, 0.7), 0px 0px 30px rgba(255, 69, 0, 0.6);
+      }
+      100% {
+        text-shadow: 0px 0px 30px rgba(255, 69, 0, 1), 0px 0px 40px rgba(255, 69, 0, 0.8);
+      }
+    }
+
     /* Надпись внизу */
     .footer {
       position: absolute;
@@ -184,14 +209,18 @@
       font-style: italic;
       opacity: 0.8;
     }
+
   </style>
 </head>
 <body>
 
   <div class="container">
+    <div class="hot-message">
+      С нами будет жарко!
+    </div>
     <h1>Добро пожаловать в проект Hot Coffee!</h1>
     <p>Этот проект продемонстрирует, как можно использовать Go для создания динамичных веб-приложений с красивым интерфейсом. С нами будет жарко!</p>
-    <button class="button" onclick="window.location.href='https://platform.alem.school/git/tishmal/hot-coffee.git'">Перейти на GitHub</button>
+    <button class="button" onclick="window.location.href='https://github.com/alem-platform/foundation'">Перейти на GitHub</button>
 
     <!-- Чашки кофе с анимацией пара -->
     <div class="cup cup1">

@@ -3,10 +3,12 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strings"
+
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
 	"hot-coffee/utils"
-	"log"
 )
 
 type InventoryServiceInterface interface {
@@ -30,9 +32,17 @@ func (s *InventoryService) CreateInventory(inventory models.InventoryItem) (mode
 		return models.InventoryItem{}, err
 	}
 
-	if inventory.IngredientID == "" || inventory.Name == "" || inventory.Quantity == 0 || inventory.Unit == "" {
+	if inventory.Name == "" || inventory.Quantity == 0 || inventory.Unit == "" {
 		return models.InventoryItem{}, errors.New("invalid request body")
 	}
+
+	newID := strings.ToLower(inventory.Name)
+
+	if result, err := s.GetInventoryByID(newID); result.IngredientID == newID && err == nil {
+		return models.InventoryItem{}, errors.New("This is id in inventory exists")
+	}
+
+	inventory.IngredientID = newID
 
 	if err := s.repository.CreateInventory(inventory); err != nil {
 		return models.InventoryItem{}, errors.New("inventory exists")

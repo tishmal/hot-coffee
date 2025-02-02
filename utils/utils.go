@@ -3,11 +3,12 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"hot-coffee/models"
 	"net/http"
 	"regexp"
 	"strings"
 	"unicode/utf8"
+
+	"hot-coffee/models"
 )
 
 type ErrorResponse struct {
@@ -169,6 +170,24 @@ func IsValidName(name string) error {
 	}
 
 	return nil
+}
+
+func IsValidDir(dir string) bool {
+	if strings.Contains(dir, "./") {
+		return false
+	}
+	if strings.Contains(dir, "home/") {
+		return false
+	}
+	if strings.Contains(dir, "internal/") {
+		return false
+	}
+
+	if strings.Contains(dir, "main.go") {
+		return false
+	}
+
+	return true
 }
 
 func ValidateOrder(menu []models.MenuItem, getOrder models.Order) error {

@@ -3,14 +3,17 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
+
+	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
 	"hot-coffee/utils"
-	"log"
 )
 
 type MenuServiceInterface interface {
-	AddMenuItem(menuItem models.MenuItem) error
+	AddMenuItem(menuItem models.MenuItem) (models.MenuItem, error)
 	GetAllMenuItems() ([]models.MenuItem, error)
 	GetMenuItemByID(id string) (*models.MenuItem, error)
 	DeleteMenuItemByID(id string) error
@@ -18,27 +21,52 @@ type MenuServiceInterface interface {
 }
 
 type MenuService struct {
-	repository dal.MenuRepositoryInterface
+	repository       dal.MenuRepositoryInterface
+	inventoryService InventoryService
 }
 
-func NewMenuService(repository dal.MenuRepositoryInterface) *MenuService {
-	return &MenuService{repository: repository}
+func NewMenuService(repository dal.MenuRepositoryInterface, inventoryService InventoryService) *MenuService {
+	return &MenuService{
+		repository:       repository,
+		inventoryService: inventoryService,
+	}
 }
 
-func (m *MenuService) AddMenuItem(menuItem models.MenuItem) error {
+func (m *MenuService) AddMenuItem(menuItem models.MenuItem) (models.MenuItem, error) {
+	newID := helper.GenerateID()
+
+	for {
+		if result, err := m.GetMenuItemByID(strconv.Itoa(int(newID))); result.ID != strconv.Itoa(int(newID)) && err != nil {
+			break
+		}
+		newID = helper.GenerateID()
+	}
+	menu, err := m.repository.LoadMenuItems()
+	if err != nil {
+		return models.MenuItem{}, err
+	}
+
+	for _, item := range menu {
+		if item.Name == menuItem.Name || item.Description == menuItem.Description {
+			return models.MenuItem{}, fmt.Errorf("Invalid requests body: name or description exeist in menu.")
+		}
+	}
+
+	menuItem.ID = strconv.Itoa(int(newID))
+
 	if err := utils.ValidateID(menuItem.ID); err != nil {
-		return fmt.Errorf("invalid product ID: %v", err)
+		return models.MenuItem{}, fmt.Errorf("invalid product ID: %v", err)
 	}
 
 	if err := utils.ValidateMenuItem(menuItem); err != nil {
-		return err
+		return models.MenuItem{}, err
 	}
 
 	if err := m.repository.AddMenuItem(menuItem); err != nil {
-		return err
+		return models.MenuItem{}, err
 	}
 	log.Printf("menu item added: %s", menuItem.ID)
-	return nil
+	return menuItem, nil
 }
 
 func (m *MenuService) GetAllMenuItems() ([]models.MenuItem, error) {
@@ -107,6 +135,22 @@ func (m *MenuService) UpdateMenu(id string, changeMenu models.MenuItem) (models.
 
 	if err := utils.ValidateMenuItem(changeMenu); err != nil {
 		return models.MenuItem{}, err
+	}
+
+	inventory, err := m.inventoryService.GetAllInventory()
+	if err != nil {
+		return models.MenuItem{}, errors.New("unable to load inventory items")
+	}
+
+	inventoryMap := make(map[string]models.InventoryItem)
+	for _, item := range inventory {
+		inventoryMap[item.IngredientID] = item
+	}
+
+	for _, ingredient := range changeMenu.Ingredients {
+		if _, exists := inventoryMap[ingredient.IngredientID]; !exists {
+			return models.MenuItem{}, fmt.Errorf("ingredient with ID %s not found in inventory", ingredient.IngredientID)
+		}
 	}
 
 	menu, err := m.repository.LoadMenuItems()

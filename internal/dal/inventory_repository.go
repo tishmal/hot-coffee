@@ -3,9 +3,10 @@ package dal
 import (
 	"encoding/json"
 	"fmt"
-	"hot-coffee/models"
 	"os"
 	"path/filepath"
+
+	"hot-coffee/models"
 )
 
 type InventoryRepositoryInterface interface {
@@ -35,7 +36,7 @@ func (r InventoryRepositoryJSON) CreateInventory(inventory models.InventoryItem)
 
 func (r InventoryRepositoryJSON) SaveInventory(inventories []models.InventoryItem) error {
 	filePath := filepath.Join(r.filePath, "inventory.json")
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return fmt.Errorf("could not open or create inventory file: %v", err)
 	}
