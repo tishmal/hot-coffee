@@ -3,10 +3,11 @@ package dal
 import (
 	"encoding/json"
 	"fmt"
-	"hot-coffee/models"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"hot-coffee/models"
 )
 
 type MenuRepositoryInterface interface {
@@ -42,7 +43,7 @@ func (m *MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
 
 func (m *MenuRepositoryJSON) saveMenuItems(menuItems []models.MenuItem) error {
 	filePath := filepath.Join(m.filePath, "menu_items.json")
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
 		return fmt.Errorf("could not create menu file: %v", err)
 	}

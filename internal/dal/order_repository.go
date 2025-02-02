@@ -3,10 +3,11 @@ package dal
 import (
 	"encoding/json"
 	"fmt"
-	"hot-coffee/models"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"hot-coffee/models"
 )
 
 type OrderRepositoryInterface interface {
@@ -38,7 +39,7 @@ func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 
 func (r *OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
 	filePath := filepath.Join(r.filePath, "orders.json")
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0644)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
 		return fmt.Errorf("could not create orders file: %v", err)
 	}
