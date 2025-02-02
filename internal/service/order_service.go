@@ -54,33 +54,9 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 		return models.Order{}, err
 	}
 
-	// Прежде чем перейдём в наличие ингридиентов, проверяем меню:
-	// Валидация на соответсвие отсылаемого запросом и исполняемого заказа с тем что есть в меню
-	// 1. Добавляем в массивы данные которые совпали с теми, что хранятся в menu.json
-	var idshki []string
-	for i := 0; i < len(menu); i++ {
-		for _, item := range order.Items {
-			if item.ProductID == menu[i].ID {
-				idshki = append(idshki, item.ProductID)
-			}
-		}
-	}
-	// 2. Перебираем заказ и пробиваем на валидацию
-	for _, item := range order.Items {
-		err := utils.ValidateQuantity(float64(item.Quantity)) // преждевременная валидация на большие и отрицательные цифрры она не плоха
-		if err != nil {
-			return models.Order{}, err
-		}
-
-		if len(idshki) == 0 {
-			return models.Order{}, fmt.Errorf("Invalid product ID: %s. Product not found in the menu.", item.ProductID)
-		}
-
-		for i := 0; i < len(idshki); i++ {
-			if item.ProductID != idshki[i] {
-				return models.Order{}, fmt.Errorf("Invalid product ID: %s. Product not found in the menu.", item.ProductID)
-			}
-		}
+	err = utils.ValidateOrder(menu, order)
+	if err != nil {
+		return models.Order{}, err
 	}
 
 	order.ID = "order" + strconv.Itoa(int(newID))
@@ -120,17 +96,27 @@ func (s *OrderService) DeleteOrder(id string) (*models.Order, error) {
 }
 
 func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
-	if changeOrder.CustomerName == "" || changeOrder.Items == nil || changeOrder.Status == "" {
+	if changeOrder.CustomerName == "" || changeOrder.Items == nil {
 		return models.Order{}, errors.New("invalid request body")
 	}
 
-	orders, err := s.repository.UpdateOrder(id, changeOrder)
+	orders, err := s.repository.LoadOrders()
 	if err != nil {
 		return changeOrder, fmt.Errorf("error reading all oreders %s: %v", id, err)
 	}
 
+	menu, err := s.menuService.repository.LoadMenuItems()
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	err = utils.ValidateOrder(menu, changeOrder)
+	if err != nil {
+		return models.Order{}, err
+	}
+
 	for i := 0; i < len(orders); i++ {
-		if orders[i].Status == "closed" {
+		if orders[i].ID == changeOrder.ID && changeOrder.Status == "closed" {
 			return models.Order{}, fmt.Errorf("order is closed")
 		}
 		if orders[i].ID == id {

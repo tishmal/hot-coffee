@@ -170,3 +170,47 @@ func IsValidName(name string) error {
 
 	return nil
 }
+
+func ValidateOrder(menu []models.MenuItem, getOrder models.Order) error {
+	//
+	var idshki []string
+	for i := 0; i < len(menu); i++ {
+		for _, item := range getOrder.Items {
+			if item.ProductID == menu[i].ID {
+				idshki = append(idshki, item.ProductID)
+			}
+		}
+	}
+	var count int = len(idshki)
+	var correctProducts []string
+	// 2. Перебираем заказ и пробиваем на валидацию
+	for _, item := range getOrder.Items {
+		err := ValidateQuantity(float64(item.Quantity)) // преждевременная валидация на большие и отрицательные цифрры она не плоха
+		if err != nil {
+			return err
+		}
+
+		if len(idshki) == 0 {
+			return fmt.Errorf("Invalid product ID: %s. Product not found in the menu.", item.ProductID)
+		}
+
+		for i := 0; i < len(idshki); i++ {
+			if item.ProductID == idshki[i] {
+				if len(getOrder.Items) == len(idshki) {
+					count--
+				}
+				correctProducts = append(correctProducts, item.ProductID)
+			}
+		}
+	}
+
+	for _, item := range getOrder.Items {
+		for _, product := range correctProducts {
+			if count != 0 && item.ProductID != product {
+				return fmt.Errorf("Invalid product ID %s. Product not found in the menu.", item.ProductID)
+			}
+		}
+	}
+	return nil
+	//
+}

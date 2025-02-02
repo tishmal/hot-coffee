@@ -14,7 +14,6 @@ type OrderRepositoryInterface interface {
 	LoadOrders() ([]models.Order, error)
 	GetOrderByID(id string) (*models.Order, error)
 	DeleteOrder(id string) (*models.Order, error)
-	UpdateOrder(id string, changeOrder models.Order) ([]models.Order, error)
 	SaveOrders(orders []models.Order) error
 }
 
@@ -112,12 +111,4 @@ func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
 		}
 	}
 	return nil, fmt.Errorf("Order with ID %s not found", id)
-}
-
-func (r *OrderRepositoryJSON) UpdateOrder(id string, changeOrder models.Order) ([]models.Order, error) {
-	orders, err := r.LoadOrders()
-	if err != nil {
-		return orders, err
-	}
-	return orders, nil
 }

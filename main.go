@@ -68,7 +68,7 @@ func main() {
 	}
 
 	// Запуск браузера
-	// go helper.OpenBrowser(addr)
+	go helper.OpenBrowser(addr)
 
 	// Запуск HTTP сервера
 	log.Printf("Server running on port %s with BaseDir %s\n", addr, *dir)
