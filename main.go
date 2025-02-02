@@ -3,15 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+
 	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
 	"hot-coffee/internal/routes"
 	"hot-coffee/internal/service"
 	"hot-coffee/utils"
-	"log"
-	"net/http"
-	"os"
 )
 
 func main() {
