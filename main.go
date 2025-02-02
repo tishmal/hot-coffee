@@ -67,6 +67,7 @@ func main() {
 		log.Fatal("Invalid port number")
 	}
 
+	http.HandleFunc("/", helper.Handler)
 	// Запуск браузера
 	go helper.OpenBrowser(addr)
 

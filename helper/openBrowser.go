@@ -2,9 +2,15 @@ package helper
 
 import (
 	"fmt"
+	"net/http"
 	"os/exec"
 	"runtime"
 )
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+	// Указываем путь к вашему HTML файлу
+	http.ServeFile(w, r, "./index.html")
+}
 
 // Функция для открытия браузера
 func OpenBrowser(addr string) {
