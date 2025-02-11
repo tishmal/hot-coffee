@@ -34,5 +34,11 @@
     "name": "fsefes",
     "quantity": 9000,
     "unit": "g"
+  },
+  {
+    "ingredient_id": "espresso shot",
+    "name": "Espresso Shot",
+    "quantity": 500,
+    "unit": "shots"
   }
 ]

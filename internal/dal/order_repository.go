@@ -72,7 +72,7 @@ func (r *OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
 
 func (r *OrderRepositoryJSON) GetOrderByID(id string) (*models.Order, error) {
 	orders, err := r.LoadOrders()
-	if err != nil {
+	if err != nil && orders != nil {
 		return &models.Order{}, err
 	}
 

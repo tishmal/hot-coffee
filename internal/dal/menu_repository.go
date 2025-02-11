@@ -70,7 +70,7 @@ func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
 	defer file.Close()
 
 	var menuItems []models.MenuItem
-	if err := json.NewDecoder(file).Decode(&menuItems); err != nil {
+	if err := json.NewDecoder(file).Decode(&menuItems); err != nil && menuItems != nil {
 		return nil, fmt.Errorf("could not decode menu: %v", err)
 	}
 

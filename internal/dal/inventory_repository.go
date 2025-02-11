@@ -25,7 +25,8 @@ func NewInventoryRepositoryJSON(filepath string) InventoryRepositoryJSON {
 
 func (r InventoryRepositoryJSON) CreateInventory(inventory models.InventoryItem) error {
 	inventories, err := r.GetAllInventory()
-	if err != nil {
+
+	if err != nil && inventories != nil {
 		return err
 	}
 

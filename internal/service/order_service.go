@@ -45,6 +45,7 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 
 	for {
 		if result, err := s.repository.GetOrderByID("order" + strconv.Itoa(int(newID))); result == nil && err != nil {
+			fmt.Println(err)
 			break
 		}
 		newID = helper.GenerateID()

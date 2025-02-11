@@ -2,7 +2,11 @@ package helper
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"sync/atomic"
+
+	"hot-coffee/utils"
 )
 
 var counter uint64
@@ -24,4 +28,30 @@ Options:
   --help       Show this screen.
   --port N     Port number.
   --dir S      Path to the data directory.`)
+}
+
+func CreateNewDir(dir string) {
+	if !utils.IsValidDir(dir) {
+		log.Fatal("Error: incorrect directory")
+		os.Exit(1)
+	}
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		log.Fatalf("Error creating data directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	fileArray := [3]string{"orders.json", "inventory.json", "menu_items.json"}
+
+	for i := 0; i < len(fileArray); i++ {
+		filePath := dir + "/" + fileArray[i]
+
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			file, err := os.Create(filePath)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+		}
+	}
 }

@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/internal/handler"
 	"hot-coffee/internal/routes"
 	"hot-coffee/internal/service"
-	"hot-coffee/utils"
 )
 
 func main() {
@@ -25,6 +23,9 @@ func main() {
 		helper.PrintUsage()
 		return
 	}
+
+	helper.CreateNewDir(*dir)
+
 	inventoryRepo := dal.NewInventoryRepositoryJSON(*dir)
 	inventoryService := service.NewInventoryService(inventoryRepo)
 	inventoryHandler := handler.NewInventoryHandler(inventoryService)
@@ -54,28 +55,17 @@ func main() {
 
 	http.HandleFunc("/reports/", routes.HandleRequestsReports(reportHandler))
 
-	addr := fmt.Sprintf(":%d", *port)
-
-	if !utils.IsValidDir(*dir) {
-		log.Fatal("Error: incorrect directory")
-		os.Exit(1)
-	}
-
-	if err := os.MkdirAll(*dir, 0o755); err != nil {
-		log.Fatalf("Error creating data directory: %v\n", err)
-		os.Exit(1)
-	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Page not found.", http.StatusNotFound)
+	})
 
 	if *port < 0 || *port > 65535 {
 		log.Fatal("Invalid port number")
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Page not found.", http.StatusNotFound)
-	})
-
-	// Запуск браузера
-	go helper.OpenBrowser(addr)
+	addr := fmt.Sprintf(":%d", *port)
+	// // Запуск браузера
+	// go helper.OpenBrowser(addr)
 
 	log.Printf("Server running on port %s with BaseDir %s\n", addr, *dir)
 	if err := http.ListenAndServe(addr, nil); err != nil {
