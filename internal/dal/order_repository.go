@@ -37,11 +37,19 @@ func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 
 func (r *OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
 	filePath := filepath.Join(r.filePath, "orders.json")
+
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
-		return fmt.Errorf("could not create orders file: %v", err)
+		return fmt.Errorf("could not open orders file: %v", err)
 	}
 	defer file.Close()
+
+	if err := file.Truncate(0); err != nil {
+		return fmt.Errorf("could not truncate file: %v", err)
+	}
+	if _, err := file.Seek(0, 0); err != nil {
+		return fmt.Errorf("could not seek file: %v", err)
+	}
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")

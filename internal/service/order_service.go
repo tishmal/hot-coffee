@@ -88,46 +88,38 @@ func (s *OrderService) GetOrderByID(id string) (*models.Order, error) {
 	return order, nil
 }
 
-func (s *OrderService) DeleteOrder(id string) (*models.Order, error) {
-	order, err := s.GetOrderByID(id)
+func (s *OrderService) DeleteOrder(id string) error {
+	orders, err := s.GetAllOrders()
 	if err != nil {
-		return nil, fmt.Errorf("failed to delete order with ID %s: %v", id, err)
-	}
-	
-	return order, nil
-}
-return nil, fmt.Errorf("failed to delete order with ID %s: %v", id, err)
-func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
-	orders, err := r.LoadOrders()
-	if err != nil {
-		return &models.Order{}, err
+		return fmt.Errorf("failed to delete order with ID %s: %v", id, err)
 	}
 
-	for i := 0; i < len(orders); i++ {
-		if orders[i].ID == id {
-			deletedOrder := orders[i]
-
-			orders = append(orders[:i], orders[i+1:]...)
-
-			updatedData, err := json.MarshalIndent(orders, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("Error marshaling updated orders: %v", err)
-			}
-
-			err = ioutil.WriteFile("data/orders.json", updatedData, os.ModePerm)
-			if err != nil {
-				return nil, fmt.Errorf("Error writing updated file: %v", err)
-			}
-
-			return &deletedOrder, nil
+	indexToDelete := -1
+	for i, order := range orders {
+		if order.ID == id {
+			indexToDelete = i
+			break
 		}
 	}
-	return nil, fmt.Errorf("Order with ID %s not found", id)
+
+	if indexToDelete == -1 {
+		return fmt.Errorf("order with ID %s not found", id)
+	}
+
+	orders = append(orders[:indexToDelete], orders[indexToDelete+1:]...)
+
+	if err := s.repository.SaveOrders(orders); err != nil {
+		return fmt.Errorf("could not save orders")
+	}
+	return nil
 }
 
 func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
 	if changeOrder.CustomerName == "" || changeOrder.Items == nil {
 		return models.Order{}, errors.New("invalid request body")
+	}
+	if changeOrder.ID != "" {
+		return models.Order{}, fmt.Errorf("cannot change ID or add in body requsest")
 	}
 
 	orders, err := s.repository.LoadOrders()
@@ -149,30 +141,28 @@ func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.
 		if orders[i].ID == changeOrder.ID && changeOrder.Status == "closed" {
 			return models.Order{}, fmt.Errorf("order is closed")
 		}
+
 		if orders[i].ID == id {
 			orders[i].CustomerName = changeOrder.CustomerName
 			orders[i].CreatedAt = time.Now().UTC().Format(time.RFC3339)
 			orders[i].Items = changeOrder.Items
 			s.repository.SaveOrders(orders)
-			if changeOrder.ID != orders[i].ID {
-				return models.Order{}, errors.New("cannot change ID")
-			} else {
-				return orders[i], nil
-			}
+
+			return orders[i], nil
 		}
 	}
-	return changeOrder, fmt.Errorf("Order with ID %s not found", id)
+	return changeOrder, fmt.Errorf("order with ID %s not found", id)
 }
 
 func (s *OrderService) CloseOrder(id string) (models.Order, error) {
 	orders, err := s.repository.LoadOrders()
 	if err != nil {
-		return models.Order{}, fmt.Errorf("Order with ID %s not found", id)
+		return models.Order{}, fmt.Errorf("order with ID %s not found", id)
 	}
 
 	orderId, err := s.repository.GetOrderByID(id)
 	if err != nil {
-		return models.Order{}, fmt.Errorf("Failed to retrieve order by ID%v", id)
+		return models.Order{}, fmt.Errorf("failed to retrieve order by ID%s", id)
 	}
 
 	if orderId.Status == "closed" {
@@ -191,7 +181,7 @@ func (s *OrderService) CloseOrder(id string) (models.Order, error) {
 
 	inventory, err := s.inventoryService.GetAllInventory()
 	if err != nil {
-		return models.Order{}, fmt.Errorf("Failed to retrieve inventory")
+		return models.Order{}, fmt.Errorf("failed to retrieve inventory")
 	}
 
 	var newDataMenu []models.MenuItem
@@ -228,7 +218,7 @@ func (s *OrderService) CloseOrder(id string) (models.Order, error) {
 
 	for ingredientID, item := range ingredientMap {
 		if _, err := s.inventoryService.UpdateInventoryItem(ingredientID, item); err != nil {
-			return models.Order{}, fmt.Errorf("Failed to update inventory for ingredientID %v", ingredientID)
+			return models.Order{}, fmt.Errorf("failed to update inventory for ingredientID %v", ingredientID)
 		}
 	}
 
@@ -239,5 +229,5 @@ func (s *OrderService) CloseOrder(id string) (models.Order, error) {
 			return orders[i], nil
 		}
 	}
-	return models.Order{}, fmt.Errorf("Order with ID %s not found", id)
+	return models.Order{}, fmt.Errorf("order with ID %s not found", id)
 }

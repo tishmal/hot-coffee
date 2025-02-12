@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "order_id": "order2",
+    "customer_name": "2Johyn Snow2",
+    "items": [
+      {
+        "product_id": "1",
+        "quantity": 1
+      }
+    ],
+    "status": "open",
+    "created_at": "2025-02-12T18:26:25Z"
+  }
+]

@@ -41,23 +41,6 @@ func (m *MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
 	return m.saveMenuItems(menuItems)
 }
 
-func (m *MenuRepositoryJSON) saveMenuItems(menuItems []models.MenuItem) error {
-	filePath := filepath.Join(m.filePath, "menu_items.json")
-	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
-	if err != nil {
-		return fmt.Errorf("could not create menu file: %v", err)
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(menuItems); err != nil {
-		return fmt.Errorf("could not encode menu items to file: %v", err)
-	}
-
-	return nil
-}
-
 func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
 	filePath := filepath.Join(m.filePath, "menu_items.json")
 	file, err := os.Open(filePath)
@@ -87,6 +70,23 @@ func (r *MenuRepositoryJSON) SaveMenuItems(menuItems []models.MenuItem) error {
 	err = ioutil.WriteFile(filePath, updatedData, os.ModePerm)
 	if err != nil {
 		return fmt.Errorf("error writing to menu items file: %v", err)
+	}
+
+	return nil
+}
+
+func (m *MenuRepositoryJSON) saveMenuItems(menuItems []models.MenuItem) error {
+	filePath := filepath.Join(m.filePath, "menu_items.json")
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
+	if err != nil {
+		return fmt.Errorf("could not create menu file: %v", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(menuItems); err != nil {
+		return fmt.Errorf("could not encode menu items to file: %v", err)
 	}
 
 	return nil
