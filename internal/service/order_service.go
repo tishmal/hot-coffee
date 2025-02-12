@@ -45,7 +45,6 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 
 	for {
 		if result, err := s.repository.GetOrderByID("order" + strconv.Itoa(int(newID))); result == nil && err != nil {
-			fmt.Println(err)
 			break
 		}
 		newID = helper.GenerateID()
@@ -90,11 +89,40 @@ func (s *OrderService) GetOrderByID(id string) (*models.Order, error) {
 }
 
 func (s *OrderService) DeleteOrder(id string) (*models.Order, error) {
-	order, err := s.repository.DeleteOrder(id)
+	order, err := s.GetOrderByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete order with ID %s: %v", id, err)
 	}
+	
 	return order, nil
+}
+return nil, fmt.Errorf("failed to delete order with ID %s: %v", id, err)
+func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
+	orders, err := r.LoadOrders()
+	if err != nil {
+		return &models.Order{}, err
+	}
+
+	for i := 0; i < len(orders); i++ {
+		if orders[i].ID == id {
+			deletedOrder := orders[i]
+
+			orders = append(orders[:i], orders[i+1:]...)
+
+			updatedData, err := json.MarshalIndent(orders, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("Error marshaling updated orders: %v", err)
+			}
+
+			err = ioutil.WriteFile("data/orders.json", updatedData, os.ModePerm)
+			if err != nil {
+				return nil, fmt.Errorf("Error writing updated file: %v", err)
+			}
+
+			return &deletedOrder, nil
+		}
+	}
+	return nil, fmt.Errorf("Order with ID %s not found", id)
 }
 
 func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {

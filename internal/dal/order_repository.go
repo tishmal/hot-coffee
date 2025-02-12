@@ -3,7 +3,6 @@ package dal
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -14,7 +13,6 @@ type OrderRepositoryInterface interface {
 	CreateOrder(order models.Order) error
 	LoadOrders() ([]models.Order, error)
 	GetOrderByID(id string) (*models.Order, error)
-	DeleteOrder(id string) (*models.Order, error)
 	SaveOrders(orders []models.Order) error
 }
 
@@ -28,7 +26,7 @@ func NewOrderRepositoryJSON(filePath string) *OrderRepositoryJSON {
 
 func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 	orders, err := r.LoadOrders()
-	if err != nil {
+	if err != nil && orders != nil {
 		return err
 	}
 
@@ -81,34 +79,6 @@ func (r *OrderRepositoryJSON) GetOrderByID(id string) (*models.Order, error) {
 			if orders[i].ID == id {
 				return &orders[i], nil
 			}
-		}
-	}
-	return nil, fmt.Errorf("Order with ID %s not found", id)
-}
-
-func (r *OrderRepositoryJSON) DeleteOrder(id string) (*models.Order, error) {
-	orders, err := r.LoadOrders()
-	if err != nil {
-		return &models.Order{}, err
-	}
-
-	for i := 0; i < len(orders); i++ {
-		if orders[i].ID == id {
-			deletedOrder := orders[i]
-
-			orders = append(orders[:i], orders[i+1:]...)
-
-			updatedData, err := json.MarshalIndent(orders, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("Error marshaling updated orders: %v", err)
-			}
-
-			err = ioutil.WriteFile("data/orders.json", updatedData, os.ModePerm)
-			if err != nil {
-				return nil, fmt.Errorf("Error writing updated file: %v", err)
-			}
-
-			return &deletedOrder, nil
 		}
 	}
 	return nil, fmt.Errorf("Order with ID %s not found", id)
