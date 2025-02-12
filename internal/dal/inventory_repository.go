@@ -12,7 +12,7 @@ import (
 type InventoryRepositoryInterface interface {
 	CreateInventory(inventory models.InventoryItem) error
 	SaveInventory(inventories []models.InventoryItem) error
-	GetAllInventory() ([]models.InventoryItem, error)
+	LoadInventory() ([]models.InventoryItem, error)
 }
 
 type InventoryRepositoryJSON struct {
@@ -24,7 +24,7 @@ func NewInventoryRepositoryJSON(filepath string) InventoryRepositoryJSON {
 }
 
 func (r InventoryRepositoryJSON) CreateInventory(inventory models.InventoryItem) error {
-	inventories, err := r.GetAllInventory()
+	inventories, err := r.LoadInventory()
 
 	if err != nil && inventories != nil {
 		return err
@@ -52,7 +52,7 @@ func (r InventoryRepositoryJSON) SaveInventory(inventories []models.InventoryIte
 	return nil
 }
 
-func (r InventoryRepositoryJSON) GetAllInventory() ([]models.InventoryItem, error) {
+func (r InventoryRepositoryJSON) LoadInventory() ([]models.InventoryItem, error) {
 	filePath := filepath.Join(r.filePath, "inventory.json")
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {

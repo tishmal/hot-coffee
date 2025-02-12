@@ -53,7 +53,7 @@ func (s *InventoryService) CreateInventory(inventory models.InventoryItem) (mode
 }
 
 func (s *InventoryService) GetAllInventory() ([]models.InventoryItem, error) {
-	inventrories, err := s.repository.GetAllInventory()
+	inventrories, err := s.repository.LoadInventory()
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (s *InventoryService) GetAllInventory() ([]models.InventoryItem, error) {
 }
 
 func (s *InventoryService) GetInventoryByID(id string) (models.InventoryItem, error) {
-	inventory, err := s.repository.GetAllInventory()
+	inventory, err := s.repository.LoadInventory()
 	if err != nil {
 		return models.InventoryItem{}, errors.New("get all inventory")
 	}
@@ -79,7 +79,7 @@ func (s *InventoryService) GetInventoryByID(id string) (models.InventoryItem, er
 }
 
 func (h *InventoryService) DeleteInventoryItemByID(id string) error {
-	inventoryItems, err := h.repository.GetAllInventory()
+	inventoryItems, err := h.repository.LoadInventory()
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (h *InventoryService) UpdateInventoryItem(inventoryItemID string, changedIn
 		return models.InventoryItem{}, errors.New("invalid request body")
 	}
 
-	inventoryItem, err := h.repository.GetAllInventory()
+	inventoryItem, err := h.repository.LoadInventory()
 	if err != nil {
 		return models.InventoryItem{}, errors.New("invalid load inventory items")
 	}

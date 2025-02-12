@@ -4,9 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
+	"strings"
 
-	"hot-coffee/helper"
 	"hot-coffee/internal/dal"
 	"hot-coffee/models"
 	"hot-coffee/utils"
@@ -33,14 +32,15 @@ func NewMenuService(repository dal.MenuRepositoryInterface, inventoryService Inv
 }
 
 func (m *MenuService) AddMenuItem(menuItem models.MenuItem) (models.MenuItem, error) {
-	newID := helper.GenerateID()
+	words := strings.Fields(menuItem.Name)
+	var newID string
 
-	for {
-		if result, err := m.GetMenuItemByID(strconv.Itoa(int(newID))); result.ID != strconv.Itoa(int(newID)) && err != nil {
-			break
+	for i := 0; i < len(words); i++ {
+		if i == len(words)-1 {
+			newID = strings.ToLower(words[i]) // последний - ID
 		}
-		newID = helper.GenerateID()
 	}
+
 	menu, err := m.repository.LoadMenuItems()
 	if err != nil {
 		return models.MenuItem{}, err
@@ -48,11 +48,11 @@ func (m *MenuService) AddMenuItem(menuItem models.MenuItem) (models.MenuItem, er
 
 	for _, item := range menu {
 		if item.Name == menuItem.Name || item.Description == menuItem.Description {
-			return models.MenuItem{}, fmt.Errorf("Invalid requests body: name or description exeist in menu.")
+			return models.MenuItem{}, fmt.Errorf("invalid requests body: name or description exeist in menu")
 		}
 	}
 
-	menuItem.ID = strconv.Itoa(int(newID))
+	menuItem.ID = newID
 
 	if err := utils.ValidateID(menuItem.ID); err != nil {
 		return models.MenuItem{}, fmt.Errorf("invalid product ID: %v", err)

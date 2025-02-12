@@ -56,7 +56,7 @@ func (m *MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	slog.Info("Menu item added successfully", "menuID", NewMenuItem.ID)
+	slog.Info("Menu item added successfully", "menuID", menu.ID)
 	utils.ResponseInJSON(w, 201, menu)
 }
 

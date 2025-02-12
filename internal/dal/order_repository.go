@@ -12,7 +12,6 @@ import (
 type OrderRepositoryInterface interface {
 	CreateOrder(order models.Order) error
 	LoadOrders() ([]models.Order, error)
-	GetOrderByID(id string) (*models.Order, error)
 	SaveOrders(orders []models.Order) error
 }
 
@@ -74,20 +73,4 @@ func (r *OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
 	}
 
 	return orders, nil
-}
-
-func (r *OrderRepositoryJSON) GetOrderByID(id string) (*models.Order, error) {
-	orders, err := r.LoadOrders()
-	if err != nil && orders != nil {
-		return &models.Order{}, err
-	}
-
-	if len(orders) > 0 {
-		for i := 0; i < len(orders); i++ {
-			if orders[i].ID == id {
-				return &orders[i], nil
-			}
-		}
-	}
-	return nil, fmt.Errorf("Order with ID %s not found", id)
 }

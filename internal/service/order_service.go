@@ -44,7 +44,7 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	newID := helper.GenerateID()
 
 	for {
-		if result, err := s.repository.GetOrderByID("order" + strconv.Itoa(int(newID))); result == nil && err != nil {
+		if result, err := s.GetOrderByID("order" + strconv.Itoa(int(newID))); result == nil && err != nil {
 			break
 		}
 		newID = helper.GenerateID()
@@ -81,11 +81,19 @@ func (s *OrderService) GetAllOrders() ([]models.Order, error) {
 }
 
 func (s *OrderService) GetOrderByID(id string) (*models.Order, error) {
-	order, err := s.repository.GetOrderByID(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get order: %v", err)
+	orders, err := s.repository.LoadOrders()
+	if err != nil && orders != nil {
+		return &models.Order{}, fmt.Errorf("failed to get order: %v", err)
 	}
-	return order, nil
+
+	if len(orders) > 0 {
+		for i := 0; i < len(orders); i++ {
+			if orders[i].ID == id {
+				return &orders[i], nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("order with ID %s not found", id)
 }
 
 func (s *OrderService) DeleteOrder(id string) error {
@@ -160,7 +168,7 @@ func (s *OrderService) CloseOrder(id string) (models.Order, error) {
 		return models.Order{}, fmt.Errorf("order with ID %s not found", id)
 	}
 
-	orderId, err := s.repository.GetOrderByID(id)
+	orderId, err := s.GetOrderByID(id)
 	if err != nil {
 		return models.Order{}, fmt.Errorf("failed to retrieve order by ID%s", id)
 	}

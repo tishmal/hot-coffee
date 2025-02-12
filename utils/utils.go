@@ -191,7 +191,6 @@ func IsValidDir(dir string) bool {
 }
 
 func ValidateOrder(menu []models.MenuItem, getOrder models.Order) error {
-	//
 	var idshki []string
 	for i := 0; i < len(menu); i++ {
 		for _, item := range getOrder.Items {
@@ -231,5 +230,4 @@ func ValidateOrder(menu []models.MenuItem, getOrder models.Order) error {
 		}
 	}
 	return nil
-	//
 }

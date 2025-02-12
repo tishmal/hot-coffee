@@ -166,5 +166,21 @@
         "quantity": 30
       }
     ]
+  },
+  {
+    "product_id": "gros",
+    "name": "Bros Gros",
+    "description": "Espresso with steamed",
+    "price": 3.5,
+    "ingredients": [
+      {
+        "ingredient_id": "espresso_shot",
+        "quantity": 1
+      },
+      {
+        "ingredient_id": "milk",
+        "quantity": 200
+      }
+    ]
   }
 ]
