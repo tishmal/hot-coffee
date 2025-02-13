@@ -20,14 +20,14 @@ type MenuHandlerInterface interface {
 }
 
 type MenuHandler struct {
-	menuService *service.MenuService
+	menuService service.MenuService
 }
 
-func NewMenuHandler(menuService *service.MenuService) *MenuHandler {
-	return &MenuHandler{menuService: menuService}
+func NewMenuHandler(_menuService service.MenuService) MenuHandler {
+	return MenuHandler{menuService: _menuService}
 }
 
-func (m *MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) {
+func (m MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to add a new menu item")
 
 	var NewMenuItem models.MenuItem
@@ -60,7 +60,7 @@ func (m *MenuHandler) HandleAddMenuItem(w http.ResponseWriter, r *http.Request) 
 	utils.ResponseInJSON(w, 201, menu)
 }
 
-func (m *MenuHandler) HandleGetAllMenuItems(w http.ResponseWriter, r *http.Request) {
+func (m MenuHandler) HandleGetAllMenuItems(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to get all menu items")
 
 	items, err := m.menuService.GetAllMenuItems()
@@ -79,7 +79,7 @@ func (m *MenuHandler) HandleGetAllMenuItems(w http.ResponseWriter, r *http.Reque
 	utils.ResponseInJSON(w, 200, items)
 }
 
-func (m *MenuHandler) HandleGetMenuItemById(w http.ResponseWriter, r *http.Request, menuID string) {
+func (m MenuHandler) HandleGetMenuItemById(w http.ResponseWriter, r *http.Request, menuID string) {
 	slog.Info("Received request to get menu item", "menuID", menuID)
 
 	if err := utils.ValidateID(menuID); err != nil {
@@ -99,7 +99,7 @@ func (m *MenuHandler) HandleGetMenuItemById(w http.ResponseWriter, r *http.Reque
 	utils.ResponseInJSON(w, 200, item)
 }
 
-func (m *MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Request, menuID string) {
+func (m MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Request, menuID string) {
 	slog.Info("Received request to delete menu item", "menuID", menuID)
 
 	if err := utils.ValidateID(menuID); err != nil {
@@ -119,7 +119,7 @@ func (m *MenuHandler) HandleDeleteMenuItemById(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (m *MenuHandler) HandleUpdateMenu(w http.ResponseWriter, r *http.Request, menuID string) {
+func (m MenuHandler) HandleUpdateMenu(w http.ResponseWriter, r *http.Request, menuID string) {
 	slog.Info("Received request to update menu item", "menuID", menuID)
 
 	if err := utils.ValidateID(menuID); err != nil {

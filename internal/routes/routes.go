@@ -65,7 +65,7 @@ func HandleRequestsInventory(inventoryHandler handler.InventoryHandler) http.Han
 	}
 }
 
-func HandleRequestsOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
+func HandleRequestsOrders(orderHandler handler.OrderHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := strings.Trim(r.URL.Path, "/")
 		parts := strings.SplitN(path, "/", 3)
@@ -105,7 +105,7 @@ func HandleRequestsOrders(orderHandler *handler.OrderHandler) http.HandlerFunc {
 	}
 }
 
-func HandleMenu(menuHandler *handler.MenuHandler) http.HandlerFunc {
+func HandleMenu(menuHandler handler.MenuHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := strings.Trim(r.URL.Path, "/")
 		parts := strings.SplitN(path, "/", 2)

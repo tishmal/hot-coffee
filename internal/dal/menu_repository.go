@@ -20,11 +20,11 @@ type MenuRepositoryJSON struct {
 	filePath string
 }
 
-func NewMenuRepositoryJSON(filePath string) *MenuRepositoryJSON {
-	return &MenuRepositoryJSON{filePath: filePath}
+func NewMenuRepositoryJSON(filePath string) MenuRepositoryJSON {
+	return MenuRepositoryJSON{filePath: filePath}
 }
 
-func (m *MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
+func (m MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
 	menuItems, err := m.LoadMenuItems()
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func (m *MenuRepositoryJSON) AddMenuItem(menuItem models.MenuItem) error {
 	return m.saveMenuItems(menuItems)
 }
 
-func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
+func (m MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
 	filePath := filepath.Join(m.filePath, "menu_items.json")
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -60,7 +60,7 @@ func (m *MenuRepositoryJSON) LoadMenuItems() ([]models.MenuItem, error) {
 	return menuItems, nil
 }
 
-func (r *MenuRepositoryJSON) SaveMenuItems(menuItems []models.MenuItem) error {
+func (r MenuRepositoryJSON) SaveMenuItems(menuItems []models.MenuItem) error {
 	filePath := filepath.Join(r.filePath, "menu_items.json")
 	updatedData, err := json.MarshalIndent(menuItems, "", "  ")
 	if err != nil {
@@ -75,7 +75,7 @@ func (r *MenuRepositoryJSON) SaveMenuItems(menuItems []models.MenuItem) error {
 	return nil
 }
 
-func (m *MenuRepositoryJSON) saveMenuItems(menuItems []models.MenuItem) error {
+func (m MenuRepositoryJSON) saveMenuItems(menuItems []models.MenuItem) error {
 	filePath := filepath.Join(m.filePath, "menu_items.json")
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {

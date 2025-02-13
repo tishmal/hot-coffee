@@ -19,7 +19,7 @@ func NewReportService(menuService MenuService, orderService OrderService) Report
 	}
 }
 
-func (r *ReportService) GetTotalSales() (float64, error) {
+func (r ReportService) GetTotalSales() (float64, error) {
 	orders, err := r.orderSevice.GetAllOrders()
 	if err != nil {
 		return 0, fmt.Errorf("Failed to retrieve orders")
@@ -46,7 +46,7 @@ func (r *ReportService) GetTotalSales() (float64, error) {
 	return totalSales, nil
 }
 
-func (r *ReportService) GetPopularItems() ([]models.MenuItem, error) {
+func (r ReportService) GetPopularItems() ([]models.MenuItem, error) {
 	orders, err := r.orderSevice.GetAllOrders()
 	if err != nil {
 		return []models.MenuItem{}, fmt.Errorf("Failed to retrieve orders")

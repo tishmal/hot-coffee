@@ -24,11 +24,11 @@ type OrderHandler struct {
 	orderService service.OrderService
 }
 
-func NewOrderHandler(orderService service.OrderService) *OrderHandler {
-	return &OrderHandler{orderService: orderService}
+func NewOrderHandler(orderService service.OrderService) OrderHandler {
+	return OrderHandler{orderService: orderService}
 }
 
-func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request) {
+func (h OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to create order")
 
 	var newOrder models.Order
@@ -54,7 +54,7 @@ func (h *OrderHandler) HandleCreateOrder(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (h *OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request) {
+func (h OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to get all orders")
 
 	orders, err := h.orderService.GetAllOrders()
@@ -67,11 +67,11 @@ func (h *OrderHandler) HandleGetAllOrders(w http.ResponseWriter, r *http.Request
 	utils.ResponseInJSON(w, 200, orders)
 }
 
-func (h *OrderHandler) HandleGetOrderById(w http.ResponseWriter, r *http.Request, orderID string) {
+func (h OrderHandler) HandleGetOrderById(w http.ResponseWriter, r *http.Request, orderID string) {
 	slog.Info("Received request to get order", "orderID", orderID)
 
 	order, err := h.orderService.GetOrderByID(orderID)
-	if err != nil || &order == nil {
+	if err != nil {
 		slog.Warn("Order not found", "orderID", orderID, "error", err)
 		utils.ErrorInJSON(w, http.StatusNotFound, err)
 		return
@@ -81,7 +81,7 @@ func (h *OrderHandler) HandleGetOrderById(w http.ResponseWriter, r *http.Request
 	utils.ResponseInJSON(w, 200, order)
 }
 
-func (h *OrderHandler) HandleDeleteOrder(w http.ResponseWriter, r *http.Request, orderID string) {
+func (h OrderHandler) HandleDeleteOrder(w http.ResponseWriter, r *http.Request, orderID string) {
 	slog.Info("Received request to delete order", "orderID", orderID)
 
 	err := h.orderService.DeleteOrder(orderID)
@@ -95,7 +95,7 @@ func (h *OrderHandler) HandleDeleteOrder(w http.ResponseWriter, r *http.Request,
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request, orderID string) {
+func (h OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request, orderID string) {
 	slog.Info("Received request to update order", "orderID", orderID)
 
 	var changeOrder models.Order
@@ -117,7 +117,7 @@ func (h *OrderHandler) HandleUpdateOrder(w http.ResponseWriter, r *http.Request,
 	}
 }
 
-func (h *OrderHandler) HandleCloseOrder(w http.ResponseWriter, r *http.Request, orderID string) {
+func (h OrderHandler) HandleCloseOrder(w http.ResponseWriter, r *http.Request, orderID string) {
 	slog.Info("Received request to close order", "orderID", orderID)
 
 	order, err := h.orderService.CloseOrder(orderID)

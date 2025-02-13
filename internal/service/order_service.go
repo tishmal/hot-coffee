@@ -16,8 +16,8 @@ import (
 type OrderServiceInterface interface {
 	CreateOrder(order models.Order) (models.Order, error)
 	GetAllOrders() ([]models.Order, error)
-	GetOrderByID(id string) (*models.Order, error)
-	DeleteOrder(id string) (*models.Order, error)
+	GetOrderByID(id string) (models.Order, error)
+	DeleteOrder(id string) (models.Order, error)
 	UpdateOrder(id string) (models.Order, error)
 	CloseOrder(orderID string) (models.Order, error)
 }
@@ -28,15 +28,15 @@ type OrderService struct {
 	inventoryService InventoryService
 }
 
-func NewOrderService(_repository dal.OrderRepositoryInterface, _menuService MenuService, _inventoryService InventoryService) *OrderService {
-	return &OrderService{
+func NewOrderService(_repository dal.OrderRepositoryInterface, _menuService MenuService, _inventoryService InventoryService) OrderService {
+	return OrderService{
 		repository:       _repository,
 		menuService:      _menuService,
 		inventoryService: _inventoryService,
 	}
 }
 
-func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
+func (s OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	if err := utils.IsValidName(order.CustomerName); err != nil {
 		return models.Order{}, err
 	}
@@ -44,7 +44,7 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	newID := helper.GenerateID()
 
 	for {
-		if result, err := s.GetOrderByID("order" + strconv.Itoa(int(newID))); result == nil && err != nil {
+		if result, err := s.GetOrderByID("order" + strconv.Itoa(int(newID))); result.ID != strconv.Itoa(int(newID)) && err != nil {
 			break
 		}
 		newID = helper.GenerateID()
@@ -71,7 +71,7 @@ func (s *OrderService) CreateOrder(order models.Order) (models.Order, error) {
 	return order, nil
 }
 
-func (s *OrderService) GetAllOrders() ([]models.Order, error) {
+func (s OrderService) GetAllOrders() ([]models.Order, error) {
 	orders, err := s.repository.LoadOrders()
 	if err != nil {
 		log.Printf("error get all orders!")
@@ -80,23 +80,23 @@ func (s *OrderService) GetAllOrders() ([]models.Order, error) {
 	return orders, nil
 }
 
-func (s *OrderService) GetOrderByID(id string) (*models.Order, error) {
+func (s OrderService) GetOrderByID(id string) (models.Order, error) {
 	orders, err := s.repository.LoadOrders()
 	if err != nil && orders != nil {
-		return &models.Order{}, fmt.Errorf("failed to get order: %v", err)
+		return models.Order{}, fmt.Errorf("failed to get order: %v", err)
 	}
 
 	if len(orders) > 0 {
 		for i := 0; i < len(orders); i++ {
 			if orders[i].ID == id {
-				return &orders[i], nil
+				return orders[i], nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("order with ID %s not found", id)
+	return models.Order{}, fmt.Errorf("order with ID %s not found", id)
 }
 
-func (s *OrderService) DeleteOrder(id string) error {
+func (s OrderService) DeleteOrder(id string) error {
 	orders, err := s.GetAllOrders()
 	if err != nil {
 		return fmt.Errorf("failed to delete order with ID %s: %v", id, err)
@@ -122,7 +122,7 @@ func (s *OrderService) DeleteOrder(id string) error {
 	return nil
 }
 
-func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
+func (s OrderService) UpdateOrder(id string, changeOrder models.Order) (models.Order, error) {
 	if changeOrder.CustomerName == "" || changeOrder.Items == nil {
 		return models.Order{}, errors.New("invalid request body")
 	}
@@ -162,7 +162,7 @@ func (s *OrderService) UpdateOrder(id string, changeOrder models.Order) (models.
 	return changeOrder, fmt.Errorf("order with ID %s not found", id)
 }
 
-func (s *OrderService) CloseOrder(id string) (models.Order, error) {
+func (s OrderService) CloseOrder(id string) (models.Order, error) {
 	orders, err := s.repository.LoadOrders()
 	if err != nil {
 		return models.Order{}, fmt.Errorf("order with ID %s not found", id)

@@ -36,11 +36,11 @@ func main() {
 
 	// Order service and handler
 	orderRepo := dal.NewOrderRepositoryJSON(*dir)
-	orderService := service.NewOrderService(orderRepo, *menuService, inventoryService)
-	orderHandler := handler.NewOrderHandler(*orderService)
+	orderService := service.NewOrderService(orderRepo, menuService, inventoryService)
+	orderHandler := handler.NewOrderHandler(orderService)
 
 	// Report service and handler
-	reportService := service.NewReportService(*menuService, *orderService)
+	reportService := service.NewReportService(menuService, orderService)
 	reportHandler := handler.NewReportHandler(reportService)
 
 	// HTTP Routes setup

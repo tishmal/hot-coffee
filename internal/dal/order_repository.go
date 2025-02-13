@@ -19,11 +19,11 @@ type OrderRepositoryJSON struct {
 	filePath string
 }
 
-func NewOrderRepositoryJSON(filePath string) *OrderRepositoryJSON {
-	return &OrderRepositoryJSON{filePath: filePath}
+func NewOrderRepositoryJSON(filePath string) OrderRepositoryJSON {
+	return OrderRepositoryJSON{filePath: filePath}
 }
 
-func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
+func (r OrderRepositoryJSON) CreateOrder(order models.Order) error {
 	orders, err := r.LoadOrders()
 	if err != nil && orders != nil {
 		return err
@@ -34,7 +34,7 @@ func (r *OrderRepositoryJSON) CreateOrder(order models.Order) error {
 	return r.SaveOrders(orders)
 }
 
-func (r *OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
+func (r OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
 	filePath := filepath.Join(r.filePath, "orders.json")
 
 	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0o644)
@@ -59,7 +59,7 @@ func (r *OrderRepositoryJSON) SaveOrders(orders []models.Order) error {
 	return nil
 }
 
-func (r *OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
+func (r OrderRepositoryJSON) LoadOrders() ([]models.Order, error) {
 	filePath := filepath.Join(r.filePath, "orders.json")
 	file, err := os.Open(filePath)
 	if err != nil {

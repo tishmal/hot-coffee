@@ -27,7 +27,7 @@ func NewInventoryService(_repository dal.InventoryRepositoryInterface) Inventory
 	return InventoryService{repository: _repository}
 }
 
-func (s *InventoryService) CreateInventory(inventory models.InventoryItem) (models.InventoryItem, error) {
+func (s InventoryService) CreateInventory(inventory models.InventoryItem) (models.InventoryItem, error) {
 	if err := utils.IsValidName(inventory.Name); err != nil {
 		return models.InventoryItem{}, err
 	}
@@ -39,7 +39,7 @@ func (s *InventoryService) CreateInventory(inventory models.InventoryItem) (mode
 	newID := strings.ToLower(inventory.Name)
 
 	if result, err := s.GetInventoryByID(newID); result.IngredientID == newID && err == nil {
-		return models.InventoryItem{}, errors.New("This is id in inventory exists")
+		return models.InventoryItem{}, errors.New("this is id in inventory exists")
 	}
 
 	inventory.IngredientID = newID
@@ -52,7 +52,7 @@ func (s *InventoryService) CreateInventory(inventory models.InventoryItem) (mode
 	return inventory, nil
 }
 
-func (s *InventoryService) GetAllInventory() ([]models.InventoryItem, error) {
+func (s InventoryService) GetAllInventory() ([]models.InventoryItem, error) {
 	inventrories, err := s.repository.LoadInventory()
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (s *InventoryService) GetAllInventory() ([]models.InventoryItem, error) {
 	return inventrories, nil
 }
 
-func (s *InventoryService) GetInventoryByID(id string) (models.InventoryItem, error) {
+func (s InventoryService) GetInventoryByID(id string) (models.InventoryItem, error) {
 	inventory, err := s.repository.LoadInventory()
 	if err != nil {
 		return models.InventoryItem{}, errors.New("get all inventory")
@@ -78,7 +78,7 @@ func (s *InventoryService) GetInventoryByID(id string) (models.InventoryItem, er
 	return models.InventoryItem{}, errors.New("invalid product ID in inventory items")
 }
 
-func (h *InventoryService) DeleteInventoryItemByID(id string) error {
+func (h InventoryService) DeleteInventoryItemByID(id string) error {
 	inventoryItems, err := h.repository.LoadInventory()
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (h *InventoryService) DeleteInventoryItemByID(id string) error {
 	return h.repository.SaveInventory(inventoryItems)
 }
 
-func (h *InventoryService) UpdateInventoryItem(inventoryItemID string, changedInventoryItem models.InventoryItem) (models.InventoryItem, error) {
+func (h InventoryService) UpdateInventoryItem(inventoryItemID string, changedInventoryItem models.InventoryItem) (models.InventoryItem, error) {
 	if changedInventoryItem.Name == "" || changedInventoryItem.Quantity < 0 || changedInventoryItem.Unit == "" {
 		return models.InventoryItem{}, errors.New("invalid request body")
 	}

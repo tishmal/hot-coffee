@@ -27,7 +27,7 @@ func NewInventoryHandler(_inventoryService service.InventoryService) InventoryHa
 	return InventoryHandler{inventoryService: _inventoryService}
 }
 
-func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.Request) {
+func (h InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to create inventory")
 
 	var newInventory models.InventoryItem
@@ -54,7 +54,7 @@ func (h *InventoryHandler) HandleCreateInventory(w http.ResponseWriter, r *http.
 	}
 }
 
-func (h *InventoryHandler) HandleGetAllInventory(w http.ResponseWriter, r *http.Request) {
+func (h InventoryHandler) HandleGetAllInventory(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to get all inventory")
 
 	inventories, err := h.inventoryService.GetAllInventory()
@@ -67,7 +67,7 @@ func (h *InventoryHandler) HandleGetAllInventory(w http.ResponseWriter, r *http.
 	utils.ResponseInJSON(w, 200, inventories)
 }
 
-func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http.Request, id string) {
+func (h InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http.Request, id string) {
 	slog.Info("Received request to get inventory", "inventoryID", id)
 
 	inventory, err := h.inventoryService.GetInventoryByID(id)
@@ -81,7 +81,7 @@ func (h *InventoryHandler) HandleGetInventoryById(w http.ResponseWriter, r *http
 	utils.ResponseInJSON(w, 200, inventory)
 }
 
-func (h *InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
+func (h InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
 	slog.Info("Received request to delete inventory", "inevntoryID", inventoryItemID)
 
 	err := h.inventoryService.DeleteInventoryItemByID(inventoryItemID)
@@ -95,7 +95,7 @@ func (h *InventoryHandler) HandleDeleteInventoryItem(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *InventoryHandler) HandleUpdateInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
+func (h InventoryHandler) HandleUpdateInventoryItem(w http.ResponseWriter, r *http.Request, inventoryItemID string) {
 	slog.Info("Received request to update inventory", "inventoryID", inventoryItemID)
 
 	var changedInventoryItem models.InventoryItem

@@ -22,7 +22,7 @@ func NewReportHandler(reportService service.ReportService) ReportHandler {
 	return ReportHandler{reportService: reportService}
 }
 
-func (h *ReportHandler) HandleGetTotalSales(w http.ResponseWriter, r *http.Request) {
+func (h ReportHandler) HandleGetTotalSales(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to get total sales")
 
 	totalSales, err := h.reportService.GetTotalSales()
@@ -41,7 +41,7 @@ func (h *ReportHandler) HandleGetTotalSales(w http.ResponseWriter, r *http.Reque
 	slog.Info("Total sales response sent successfully")
 }
 
-func (h *ReportHandler) HandleGetPopulatItem(w http.ResponseWriter, r *http.Request) {
+func (h ReportHandler) HandleGetPopulatItem(w http.ResponseWriter, r *http.Request) {
 	slog.Info("Received request to get popular items")
 
 	popularItem, err := h.reportService.GetPopularItems()
