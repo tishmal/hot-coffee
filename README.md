@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Hot Coffee - Coffee Shop Management System
 
 A robust backend system for managing coffee shop operations, including order processing, menu management, and inventory tracking. This RESTful API service helps coffee shops streamline their operations by handling orders, tracking inventory, and managing menu items efficiently.
@@ -121,3 +122,7 @@ The API returns appropriate HTTP status codes and error messages:
 ## Logging
 
 The application uses Go's `log/slog` package for logging operations and errors. Logs include timestamps and contextual information for better debugging and monitoring.
+=======
+# hot-coffee
+my project hot-coffee
+>>>>>>> 58d766661650be64d3340925d99c4424b41754c3
